@@ -1,7 +1,7 @@
 // Auth API service - placeholder for backend integration
 // Fill in with your actual backend implementation
 
-const API_BASE_URL = process.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 class AuthAPI {
   async login(email: string, password: string) {
