@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { ToolCard } from "./ToolCard";
 import { ConversionModal } from "./ConversionModal";
+import { useNavigate } from "react-router-dom";
 
 interface Tool {
   id: string;
@@ -19,98 +20,124 @@ interface Tool {
   icon: typeof FileText;
   color: string;
   type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'notion-to-pdf' | 'html-to-pdf';
+  route?: string;
+  comingSoon?: boolean;
 }
 
 const tools: Tool[] = [
   {
     id: 'pdf-to-word',
     title: 'PDF to Word',
-    description: 'Convert PDF files to editable Word documents',
+    description: 'Convert PDF files to editable Word documents with AI precision',
     icon: FileTextIcon,
-    color: 'bg-blue-500',
-    type: 'convert'
+    color: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    type: 'convert',
+    comingSoon: true
   },
   {
     id: 'word-to-pdf',
     title: 'Word to PDF',
-    description: 'Convert Word documents to PDF format',
+    description: 'Transform Word documents to professional PDF format',
     icon: FileText,
-    color: 'bg-red-500',
-    type: 'convert'
+    color: 'bg-gradient-to-r from-red-500 to-red-600',
+    type: 'convert',
+    comingSoon: true
   },
   {
     id: 'compress-pdf',
     title: 'Compress PDF',
-    description: 'Reduce PDF file size while maintaining quality',
+    description: 'Reduce PDF file size while maintaining crystal-clear quality',
     icon: Archive,
-    color: 'bg-green-500',
-    type: 'compress'
+    color: 'bg-gradient-to-r from-green-500 to-green-600',
+    type: 'compress',
+    route: '/compress'
   },
   {
     id: 'merge-pdf',
     title: 'Merge PDF',
-    description: 'Combine multiple PDF files into one',
+    description: 'Seamlessly combine multiple PDF files into one document',
     icon: GitMerge,
-    color: 'bg-purple-500',
-    type: 'merge'
+    color: 'bg-gradient-to-r from-purple-500 to-purple-600',
+    type: 'merge',
+    route: '/merge'
   },
   {
     id: 'split-pdf',
     title: 'Split PDF',
-    description: 'Extract pages from PDF files',
+    description: 'Extract and separate specific pages with precision',
     icon: Scissors,
-    color: 'bg-orange-500',
-    type: 'split'
+    color: 'bg-gradient-to-r from-orange-500 to-orange-600',
+    type: 'split',
+    route: '/split'
   },
   {
     id: 'html-to-pdf',
     title: 'HTML to PDF',
-    description: 'Convert HTML content or web pages to PDF',
+    description: 'Convert web pages and HTML content to professional PDFs',
     icon: Globe,
-    color: 'bg-cyan-500',
-    type: 'html-to-pdf'
+    color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
+    type: 'html-to-pdf',
+    comingSoon: true
   },
   {
     id: 'jira-to-word',
     title: 'Jira to Word',
-    description: 'Convert Jira content to Word documents',
+    description: 'Export Jira tickets and content to Word documents',
     icon: Layers,
-    color: 'bg-indigo-500',
-    type: 'jira-to-word'
+    color: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
+    type: 'jira-to-word',
+    comingSoon: true
   },
   {
     id: 'word-to-jira',
     title: 'Word to Jira',
-    description: 'Convert Word documents to Jira format',
+    description: 'Import Word documents directly into Jira format',
     icon: FileTextIcon,
-    color: 'bg-pink-500',
-    type: 'word-to-jira'
+    color: 'bg-gradient-to-r from-pink-500 to-pink-600',
+    type: 'word-to-jira',
+    comingSoon: true
   },
   {
     id: 'notion-to-pdf',
     title: 'Notion to PDF',
-    description: 'Convert Notion pages to PDF documents',
+    description: 'Transform Notion pages into beautiful PDF documents',
     icon: BookOpen,
-    color: 'bg-gray-700',
-    type: 'notion-to-pdf'
+    color: 'bg-gradient-to-r from-gray-600 to-gray-700',
+    type: 'notion-to-pdf',
+    comingSoon: true
   }
 ];
 
 export const ToolsGrid = () => {
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  const navigate = useNavigate();
+
+  const handleToolClick = (tool: Tool) => {
+    if (tool.route) {
+      navigate(tool.route);
+    } else if (!tool.comingSoon) {
+      setSelectedTool(tool);
+    }
+  };
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {tools.map((tool) => (
-          <ToolCard
-            key={tool.id}
-            title={tool.title}
-            description={tool.description}
-            icon={tool.icon}
-            color={tool.color}
-            onClick={() => setSelectedTool(tool)}
-          />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {tools.map((tool, index) => (
+          <div 
+            key={tool.id} 
+            className="animate-slide-up"
+            style={{ animationDelay: `${index * 0.1}s` }}
+          >
+            <ToolCard
+              title={tool.title}
+              description={tool.description}
+              icon={tool.icon}
+              color={tool.color}
+              onClick={() => handleToolClick(tool)}
+              comingSoon={tool.comingSoon}
+            />
+          </div>
         ))}
       </div>
 
