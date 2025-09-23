@@ -1,6 +1,6 @@
 // PDF conversion and processing API service with backend integration
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://full-shrimp-deeply.ngrok-free.app';
 
 class PdfAPI {
   private sessionId: string | null = null;
