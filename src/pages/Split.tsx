@@ -39,29 +39,11 @@ const Split = () => {
     setIsProcessing(true);
 
     try {
-      const result = await pdfApi.split(files[0], pages);
-      
-      // Download the split file
-      const url = window.URL.createObjectURL(result);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `split_${files[0].name}`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
-      toast({
-        title: "Success",
-        description: "PDF split successfully!",
-      });
-      
-      setFiles([]);
-      setPages("");
+      await pdfApi.split(files[0], pages);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to split PDF. Please try again.",
+        title: "Feature Unavailable",
+        description: "PDF splitting is not available in the current backend",
         variant: "destructive",
       });
     } finally {

@@ -19,7 +19,7 @@ interface Tool {
   description: string;
   icon: typeof FileText;
   color: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'notion-to-pdf' | 'html-to-pdf';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf';
   route?: string;
   comingSoon?: boolean;
 }
@@ -31,8 +31,7 @@ const tools: Tool[] = [
     description: 'Convert PDF files to editable Word documents with AI precision',
     icon: FileTextIcon,
     color: 'bg-gradient-to-r from-blue-500 to-blue-600',
-    type: 'convert',
-    comingSoon: true
+    type: 'convert'
   },
   {
     id: 'word-to-pdf',
@@ -40,8 +39,7 @@ const tools: Tool[] = [
     description: 'Transform Word documents to professional PDF format',
     icon: FileText,
     color: 'bg-gradient-to-r from-red-500 to-red-600',
-    type: 'convert',
-    comingSoon: true
+    type: 'convert'
   },
   {
     id: 'compress-pdf',
@@ -76,8 +74,7 @@ const tools: Tool[] = [
     description: 'Convert web pages and HTML content to professional PDFs',
     icon: Globe,
     color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
-    type: 'html-to-pdf',
-    comingSoon: true
+    type: 'html-to-pdf'
   },
   {
     id: 'jira-to-word',
@@ -85,8 +82,7 @@ const tools: Tool[] = [
     description: 'Export Jira tickets and content to Word documents',
     icon: Layers,
     color: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
-    type: 'jira-to-word',
-    comingSoon: true
+    type: 'jira-to-word'
   },
   {
     id: 'word-to-jira',
@@ -94,17 +90,31 @@ const tools: Tool[] = [
     description: 'Import Word documents directly into Jira format',
     icon: FileTextIcon,
     color: 'bg-gradient-to-r from-pink-500 to-pink-600',
-    type: 'word-to-jira',
-    comingSoon: true
+    type: 'word-to-jira'
   },
   {
-    id: 'notion-to-pdf',
-    title: 'Notion to PDF',
-    description: 'Transform Notion pages into beautiful PDF documents',
+    id: 'pdf-to-notion',
+    title: 'PDF to Notion',
+    description: 'Transform PDF files into Notion-compatible format',
     icon: BookOpen,
     color: 'bg-gradient-to-r from-gray-600 to-gray-700',
-    type: 'notion-to-pdf',
-    comingSoon: true
+    type: 'pdf-to-notion'
+  },
+  {
+    id: 'pdf-to-jpg',
+    title: 'PDF to JPG',
+    description: 'Convert PDF pages to high-quality JPG images',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+    type: 'convert'
+  },
+  {
+    id: 'jpg-to-pdf',
+    title: 'JPG to PDF',
+    description: 'Transform JPG images into PDF documents',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-teal-500 to-teal-600',
+    type: 'convert'
   }
 ];
 

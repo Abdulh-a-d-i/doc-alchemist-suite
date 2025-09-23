@@ -15,7 +15,7 @@ interface Tool {
   id: string;
   title: string;
   description: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'notion-to-pdf' | 'html-to-pdf';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf';
 }
 
 interface ConversionModalProps {
@@ -31,6 +31,8 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
   const [url, setUrl] = useState("");
   const [pages, setPages] = useState("");
   const [compressionLevel, setCompressionLevel] = useState("medium");
+  const [projectKey, setProjectKey] = useState("");
+  const [jql, setJql] = useState("");
   const { toast } = useToast();
 
   const downloadFile = (blob: Blob, filename: string) => {
@@ -60,8 +62,16 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
             });
             return;
           }
-          result = await pdfApi.convert(files, tool.id);
-          downloadFile(result, `converted_${files[0].name}`);
+          
+          // Determine target format from tool id
+          let target = '';
+          if (tool.id === 'pdf-to-word') target = 'docx';
+          else if (tool.id === 'word-to-pdf') target = 'pdf';
+          else if (tool.id === 'pdf-to-jpg') target = 'jpg';
+          else if (tool.id === 'jpg-to-pdf') target = 'pdf';
+          
+          result = await pdfApi.convert(files[0], target);
+          downloadFile(result, `converted_${files[0].name.split('.')[0]}.${target}`);
           break;
           
         case 'compress':
@@ -73,7 +83,7 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
             });
             return;
           }
-          result = await pdfApi.compress(files, compressionLevel);
+          result = await pdfApi.compress(files[0], compressionLevel);
           downloadFile(result, `compressed_${files[0].name}`);
           break;
           
@@ -117,51 +127,78 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
           break;
           
         case 'jira-to-word':
-          if (!textContent) {
+          if (!projectKey) {
             toast({
               title: "Error",
-              description: "Please provide Jira content",
+              description: "Please provide project key",
               variant: "destructive",
             });
             return;
           }
-          result = await pdfApi.jiraToWord(textContent);
-          downloadFile(result, "jira_export.docx");
+          try {
+            await pdfApi.loginJira();
+            result = await pdfApi.jiraToWord(projectKey, jql);
+            downloadFile(result, "jira_export.docx");
+          } catch (error) {
+            if (error instanceof Error && error.message.includes('login')) {
+              toast({
+                title: "Authentication Required",
+                description: "Please complete Jira authentication in the popup",
+                variant: "destructive",
+              });
+            }
+            throw error;
+          }
           break;
           
         case 'word-to-jira':
+          if (files.length === 0 || !projectKey) {
+            toast({
+              title: "Error",
+              description: "Please select a Word file and provide project key",
+              variant: "destructive",
+            });
+            return;
+          }
+          try {
+            await pdfApi.loginJira();
+            result = await pdfApi.wordToJira(files[0], projectKey);
+            navigator.clipboard.writeText(result.content || JSON.stringify(result));
+            toast({
+              title: "Success",
+              description: "Jira content copied to clipboard",
+            });
+          } catch (error) {
+            if (error instanceof Error && error.message.includes('login')) {
+              toast({
+                title: "Authentication Required", 
+                description: "Please complete Jira authentication in the popup",
+                variant: "destructive",
+              });
+            }
+            throw error;
+          }
+          break;
+          
+        case 'pdf-to-notion':
           if (files.length === 0) {
             toast({
               title: "Error",
-              description: "Please select a Word file",
+              description: "Please select a PDF file",
               variant: "destructive",
             });
             return;
           }
-          result = await pdfApi.wordToJira(files[0]);
-          // Handle Jira content display or copy to clipboard
-          navigator.clipboard.writeText(result.content);
+          result = await pdfApi.pdfToNotion(files[0]);
+          navigator.clipboard.writeText(result.content || JSON.stringify(result));
           toast({
             title: "Success",
-            description: "Jira content copied to clipboard",
+            description: "Notion content copied to clipboard",
           });
-          break;
-          
-        case 'notion-to-pdf':
-          if (!textContent) {
-            toast({
-              title: "Error",
-              description: "Please provide Notion content",
-              variant: "destructive",
-            });
-            return;
-          }
-          result = await pdfApi.notionToPdf(textContent);
-          downloadFile(result, "notion_export.pdf");
           break;
       }
 
-      if (tool.type !== 'word-to-jira') {
+      if (!['word-to-jira', 'pdf-to-notion'].includes(tool.type)) {
         toast({
           title: "Success",
           description: "File processed successfully!",
@@ -171,9 +208,10 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
       onOpenChange(false);
       
     } catch (error) {
+      console.error('Processing error:', error);
       toast({
         title: "Error",
-        description: "Failed to process file. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process file. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -184,9 +222,14 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
   const getAcceptedTypes = () => {
     switch (tool.type) {
       case 'convert':
-        return tool.id.includes('pdf-to') ? ['.pdf'] : ['.doc', '.docx'];
+        if (tool.id.includes('pdf-to')) return ['.pdf'];
+        if (tool.id.includes('word-to')) return ['.doc', '.docx'];
+        if (tool.id.includes('jpg-to')) return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'];
+        return ['.pdf'];
       case 'word-to-jira':
         return ['.doc', '.docx'];
+      case 'pdf-to-notion':
+        return ['.pdf'];
       default:
         return ['.pdf'];
     }
@@ -234,19 +277,46 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
                 </div>
               </TabsContent>
             </Tabs>
-          ) : (tool.type === 'jira-to-word' || tool.type === 'notion-to-pdf') ? (
-            <div className="space-y-2">
-              <Label htmlFor="content">
-                {tool.type === 'jira-to-word' ? 'Jira Content' : 'Notion Content'}
-              </Label>
-              <Textarea
-                id="content"
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                placeholder={`Paste your ${tool.type === 'jira-to-word' ? 'Jira' : 'Notion'} content here...`}
-                rows={8}
-              />
+          ) : (tool.type === 'jira-to-word' || tool.type === 'word-to-jira') ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="projectKey">Project Key</Label>
+                <Input
+                  id="projectKey"
+                  value={projectKey}
+                  onChange={(e) => setProjectKey(e.target.value)}
+                  placeholder="e.g., PROJ"
+                />
+              </div>
+              {tool.type === 'jira-to-word' && (
+                <div className="space-y-2">
+                  <Label htmlFor="jql">JQL Query (Optional)</Label>
+                  <Input
+                    id="jql"
+                    value={jql}
+                    onChange={(e) => setJql(e.target.value)}
+                    placeholder="e.g., project = PROJ AND status = Done"
+                  />
+                </div>
+              )}
+              {tool.type === 'word-to-jira' && (
+                <FileUpload
+                  onFilesSelected={setFiles}
+                  acceptedTypes={getAcceptedTypes()}
+                  maxFiles={getMaxFiles()}
+                  title="Select Word file"
+                  description="Upload the Word document to convert to Jira format"
+                />
+              )}
             </div>
+          ) : (tool.type === 'pdf-to-notion') ? (
+            <FileUpload
+              onFilesSelected={setFiles}
+              acceptedTypes={getAcceptedTypes()}
+              maxFiles={getMaxFiles()}
+              title="Select PDF file"
+              description="Upload the PDF to convert to Notion format"
+            />
           ) : (
             <>
               <FileUpload

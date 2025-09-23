@@ -30,7 +30,7 @@ const Compress = () => {
     setIsProcessing(true);
 
     try {
-      const result = await pdfApi.compress(files, compressionLevel);
+      const result = await pdfApi.compress(files[0], compressionLevel);
       
       // Download the compressed file
       const url = window.URL.createObjectURL(result);
