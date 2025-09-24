@@ -358,7 +358,7 @@ interface JiraOptions {
 class PdfAPI {
   private sessionId: string | null = null;
 
-  // 🔑 Central helper to inject headers into every fetch
+  // Central helper to inject headers into every fetch
   private async request(url: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(url, {
       ...options,
@@ -481,11 +481,16 @@ class PdfAPI {
       }, 1000);
 
       const messageHandler = (event: MessageEvent) => {
-        if (event.data === "jira_auth_success") {
+        if (event.data?.type === "jira_auth_success" || event.data === "jira_auth_success") {
           clearInterval(checkClosed);
           window.removeEventListener("message", messageHandler);
           popup.close();
           resolve();
+        } else if (event.data?.type === "jira_auth_error") {
+          clearInterval(checkClosed);
+          window.removeEventListener("message", messageHandler);
+          popup.close();
+          reject(new Error(event.data.error || "Authentication failed"));
         }
       };
       window.addEventListener("message", messageHandler);
@@ -535,40 +540,42 @@ class PdfAPI {
     return response.json();
   }
 
-  // Create Jira issues - Only accepts object parameters
+  // Create Jira issues - FIXED VERSION
   async createJiraIssues(options: JiraOptions): Promise<any> {
-    // Validate that options object exists
-    if (!options || typeof options !== 'object') {
-      throw new Error("Options object is required");
+    // Enhanced validation with better error messages
+    if (!options) {
+      console.error("CRITICAL ERROR: options is null/undefined");
+      throw new Error("Options parameter is required and cannot be null or undefined");
     }
 
-    // Log inputs for debugging
-    console.log("Creating Jira issues with options:", {
-      state: options.state,
-      projectType: options.projectType,
-      tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
-      tasksType: typeof options.tasks,
-      tasksIsArray: Array.isArray(options.tasks),
-      projectKey: options.projectKey,
-      serviceDeskId: options.serviceDeskId,
-      requestTypeId: options.requestTypeId,
+    if (typeof options !== 'object') {
+      console.error("CRITICAL ERROR: options is not an object, got:", typeof options, options);
+      throw new Error("Options must be an object");
+    }
+
+    // Log the actual options received for debugging
+    console.log("🔍 DEBUGGING createJiraIssues called with:", {
+      optionsType: typeof options,
+      optionsKeys: Object.keys(options || {}),
+      state: options?.state,
+      projectType: options?.projectType,
+      tasks: options?.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
+      projectKey: options?.projectKey,
+      serviceDeskId: options?.serviceDeskId,
+      requestTypeId: options?.requestTypeId,
     });
 
-    // Validate state
+    // Validate required fields
     if (!options.state || typeof options.state !== 'string') {
-      throw new Error("State must be a non-empty string");
+      throw new Error(`State must be a non-empty string, got: ${typeof options.state} - ${options.state}`);
     }
 
-    // Validate projectType
     if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
-      console.error("Invalid projectType:", options.projectType);
-      throw new Error("Project type must be 'software' or 'jsm'");
+      throw new Error(`Project type must be 'software' or 'jsm', got: ${options.projectType}`);
     }
 
-    // Validate tasks
     if (!options.tasks || !Array.isArray(options.tasks)) {
-      console.error("Invalid tasks:", options.tasks);
-      throw new Error("Tasks must be a non-empty array");
+      throw new Error(`Tasks must be a non-empty array, got: ${typeof options.tasks} - ${options.tasks}`);
     }
 
     if (options.tasks.length === 0) {
@@ -580,51 +587,59 @@ class PdfAPI {
       throw new Error("projectKey is required for software projects");
     }
 
-    if (options.projectType === "jsm" && (!options.serviceDeskId || !options.requestTypeId)) {
-      throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
+    if (options.projectType === "jsm") {
+      if (!options.serviceDeskId) {
+        throw new Error("serviceDeskId is required for JSM projects");
+      }
+      if (!options.requestTypeId) {
+        throw new Error("requestTypeId is required for JSM projects");
+      }
     }
 
     // Validate task structure
     options.tasks.forEach((task, index) => {
-      if (!task || typeof task !== 'object' || !task.summary || typeof task.summary !== 'string') {
-        throw new Error(`Task at index ${index} is invalid: must be an object with a 'summary' string`);
+      if (!task || typeof task !== 'object') {
+        throw new Error(`Task at index ${index} must be an object, got: ${typeof task}`);
+      }
+      if (!task.summary || typeof task.summary !== 'string') {
+        throw new Error(`Task at index ${index} must have a 'summary' string property`);
       }
     });
 
-    // Build payload
-    const payload: any = {
+    // Build payload matching backend expectations
+    const payload = {
       state: options.state,
-      project_type: options.projectType,
+      project_type: options.projectType, // Backend expects project_type
       tasks: options.tasks,
+      // Add optional fields only if they exist
+      ...(options.projectKey && { project_key: options.projectKey }),
+      ...(options.serviceDeskId && { service_desk_id: options.serviceDeskId }),
+      ...(options.requestTypeId && { request_type_id: options.requestTypeId }),
     };
-
-    if (options.projectType === "software") {
-      payload.project_key = options.projectKey;
-    }
-
-    if (options.projectType === "jsm") {
-      payload.service_desk_id = options.serviceDeskId;
-      payload.request_type_id = options.requestTypeId;
-    }
 
     console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
 
-    const response = await this.request(`${API_BASE_URL}/jira/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await this.request(`${API_BASE_URL}/jira/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await response.json();
-    console.log("✅ Issues created:", data);
-    return data;
+      const data = await response.json();
+      console.log("✅ Issues created successfully:", data);
+      return data;
+    } catch (error) {
+      console.error("❌ Error creating Jira issues:", error);
+      throw error;
+    }
   }
 
   // Parse Word document to tasks
-  async parseWordToTasks(file: File): Promise<{ tasks: JiraTask[] }> {
+  async parseWordToTasks(file: File): Promise<{ state: string; tasks: JiraTask[] }> {
     if (!file) {
       throw new Error("File is required");
     }
@@ -646,7 +661,7 @@ class PdfAPI {
   }
 
   // Get tasks by state
-  async getTasks(state: string): Promise<any> {
+  async getTasks(state: string): Promise<{ tasks: JiraTask[]; filename?: string }> {
     if (!state) {
       throw new Error("State parameter is required");
     }
@@ -713,6 +728,16 @@ class PdfAPI {
     } else {
       throw new Error("Either HTML content or URL must be provided");
     }
+  }
+
+  // Get user profile
+  async getUserProfile(state: string): Promise<any> {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
+    const response = await this.request(`${API_BASE_URL}/user/profile?state=${state}`);
+    return response.json();
   }
 }
 
