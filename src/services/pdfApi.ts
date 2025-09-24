@@ -162,36 +162,49 @@ class PdfAPI {
   }
 
   // Create Jira issues
-  async createJiraIssues(
-  state: string,
-  projectType: "software" | "jsm",
-  projectKey?: string,
-  serviceDeskId?: string,
-  requestTypeId?: string,
-  tasks?: any[]
-) {
-  const payload = {
-  state,
-  project_type: "software",  // or "jsm"
-  project_key: "DEMO",       // required if software
-  service_desk_id,           // required if jsm
-  request_type_id,           // required if jsm
-  tasks                      // optional
-};
+  async function createJiraIssues(state: string, projectType: "software" | "jsm", tasks: any[], projectKey?: string, serviceDeskId?: string, requestTypeId?: string) {
+  try {
+    let payload: any = {
+      state,
+      project_type: projectType,
+      tasks
+    };
 
-  const response = await fetch(`${API_BASE_URL}/jira/create`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'ngrok-skip-browser-warning': 'true'
-    },
-    body: JSON.stringify(payload),
-  });
+    if (projectType === "software") {
+      if (!projectKey) {
+        throw new Error("projectKey is required for software projects");
+      }
+      payload.project_key = projectKey;
+    }
 
-  if (!response.ok) {
-    throw new Error(`Failed to create issues: ${response.statusText}`);
+    if (projectType === "jsm") {
+      if (!serviceDeskId || !requestTypeId) {
+        throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
+      }
+      payload.service_desk_id = serviceDeskId;
+      payload.request_type_id = requestTypeId;
+    }
+
+    console.log("🚀 Sending payload to backend:", payload);
+
+    const res = await fetch(`${BACKEND_URL}/jira/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || "Failed to create Jira issues");
+    }
+
+    const data = await res.json();
+    console.log("✅ Issues created:", data);
+    return data;
+  } catch (err) {
+    console.error("❌ Error creating Jira issues:", err);
+    throw err;
   }
-  return response.json();
 }
 
   // async createJiraIssues(state: string, tasks: any[]) {
