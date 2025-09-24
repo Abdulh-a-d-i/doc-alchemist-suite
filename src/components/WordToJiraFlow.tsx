@@ -109,25 +109,33 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
   };
 
   const handleCreateIssues = async () => {
-    setIsProcessing(true);
-    try {
-      const result = await pdfApi.createJiraIssues(state, tasks);
-      setCreatedIssues(result.created || []);
-      setStep('success');
-      toast({
-        title: "Success",
-        description: `Created ${result.created?.length || 0} Jira issues`,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create Jira issues",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  setIsProcessing(true);
+  try {
+    const result = await pdfApi.createJiraIssues({
+      state,
+      projectType: selectedProject ? "software" : "jsm",
+      projectKey: selectedProject || undefined,
+      serviceDeskId: selectedDesk || undefined,
+      requestTypeId: selectedRequestType || undefined,
+      tasks,
+    });
+
+    setCreatedIssues(result.created || []);
+    setStep('success');
+    toast({
+      title: "Success",
+      description: `Created ${result.created?.length || 0} Jira issues`,
+    });
+  } catch (error) {
+    toast({
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to create Jira issues",
+      variant: "destructive",
+    });
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   const updateTask = (index: number, field: keyof Task, value: string) => {
     const updatedTasks = [...tasks];
