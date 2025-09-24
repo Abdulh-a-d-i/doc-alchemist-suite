@@ -324,6 +324,7 @@
 
 
 // Fixed PDF conversion and processing API service with backend integration
+// Fixed PDF conversion and processing API service with backend integration
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
@@ -531,7 +532,8 @@ class PdfAPI {
       console.log('🔵 FRONTEND: Creating Jira issues with params:', {
         state,
         projectType,
-        tasksCount: tasks.length,
+        tasks: tasks ? `Array(${tasks.length})` : 'undefined',
+        tasksType: typeof tasks,
         projectKey,
         serviceDeskId,
         requestTypeId
@@ -542,8 +544,17 @@ class PdfAPI {
         throw new Error("State is required");
       }
 
-      if (!tasks || !Array.isArray(tasks) || tasks.length === 0) {
-        throw new Error("Tasks array is required and cannot be empty");
+      // More defensive validation for tasks
+      if (!tasks) {
+        throw new Error("Tasks parameter is required but was undefined");
+      }
+      
+      if (!Array.isArray(tasks)) {
+        throw new Error(`Tasks must be an array, got ${typeof tasks}`);
+      }
+      
+      if (tasks.length === 0) {
+        throw new Error("Tasks array cannot be empty");
       }
 
       if (projectType === "software" && !projectKey) {
