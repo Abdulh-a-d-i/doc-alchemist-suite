@@ -1,7 +1,16 @@
 // PDF conversion and processing API service with backend integration
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://full-shrimp-deeply.ngrok-free.app';
-
+async function apiFetch(url: string, options: RequestInit = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      'ngrok-skip-browser-warning': 'true', // prevent ngrok injecting HTML banner
+    },
+  });
+  return response;
+}
 class PdfAPI {
   private sessionId: string | null = null;
 
