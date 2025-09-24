@@ -85,33 +85,128 @@ class PdfAPI {
     throw new Error('Split functionality not available in current backend');
   }
 
-  // Jira authentication
-  async loginJira(): Promise<string> {
-    const response = await fetch(`${API_BASE_URL}/login/jira`, {
-      method: 'GET',
+  // Jira authentication with state
+  async loginJira(state: string): Promise<void> {
+    const url = `${API_BASE_URL}/login/jira?state=${state}`;
+    const popup = window.open(url, 'jira-auth', 'width=600,height=700');
+    
+    return new Promise((resolve, reject) => {
+      const checkClosed = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkClosed);
+          this.checkJiraStatus(state).then(resolve).catch(reject);
+        }
+      }, 1000);
+
+      // Listen for auth success message
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data === 'jira_auth_success') {
+          clearInterval(checkClosed);
+          popup?.close();
+          window.removeEventListener('message', messageHandler);
+          resolve();
+        }
+      };
+      window.addEventListener('message', messageHandler);
+
+      // Timeout after 5 minutes
+      setTimeout(() => {
+        clearInterval(checkClosed);
+        popup?.close();
+        window.removeEventListener('message', messageHandler);
+        reject(new Error('Authentication timeout'));
+      }, 300000);
+    });
+  }
+
+  // Check Jira authentication status
+  async checkJiraStatus(state: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/jira/status?state=${state}`);
+    const data = await response.json();
+    
+    if (!data.authenticated) {
+      throw new Error('Jira authentication failed');
+    }
+  }
+
+  // Get Jira projects
+  async getJiraProjects(state: string) {
+    const response = await fetch(`${API_BASE_URL}/jira/projects?state=${state}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Get Jira request types for Service Desk
+  async getJiraRequestTypes(state: string, serviceDeskId: string) {
+    const response = await fetch(`${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch request types: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Create Jira issues
+  async createJiraIssues(state: string, tasks: any[]) {
+    const response = await fetch(`${API_BASE_URL}/jira/create`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ state, tasks }),
     });
 
     if (!response.ok) {
-      throw new Error(`Jira login failed: ${response.statusText}`);
+      throw new Error(`Failed to create issues: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    this.sessionId = data.session_id;
-    return data.session_id;
+    return response.json();
+  }
+
+  // Parse Word document to tasks
+  async parseWordToTasks(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/convert/word-to-jira`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to parse Word document: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Get tasks by state
+  async getTasks(state: string) {
+    const response = await fetch(`${API_BASE_URL}/tasks/${state}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  // Clear session
+  async clearSession(state: string) {
+    const response = await fetch(`${API_BASE_URL}/session/${state}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to clear session: ${response.statusText}`);
+    }
+    return response.json();
   }
 
   // Jira to Word conversion
-  async jiraToWord(projectKey: string, jql?: string) {
-    if (!this.sessionId) {
-      throw new Error('Please login to Jira first');
-    }
-
+  async jiraToWord(state: string, projectKey?: string, jql?: string) {
     const url = new URL(`${API_BASE_URL}/convert/jira-to-word`);
-    url.searchParams.append('session_id', this.sessionId);
-    url.searchParams.append('project_key', projectKey);
-    if (jql) {
-      url.searchParams.append('jql', jql);
-    }
+    if (projectKey) url.searchParams.append('project_key', projectKey);
+    if (jql) url.searchParams.append('jql', jql);
+    url.searchParams.append('state', state);
 
     const response = await fetch(url.toString(), {
       method: 'POST',
@@ -122,31 +217,6 @@ class PdfAPI {
     }
 
     return response.blob();
-  }
-
-  // Word to Jira conversion
-  async wordToJira(file: File, projectKey: string) {
-    if (!this.sessionId) {
-      throw new Error('Please login to Jira first');
-    }
-
-    const url = new URL(`${API_BASE_URL}/convert/word-to-jira`);
-    url.searchParams.append('session_id', this.sessionId);
-    url.searchParams.append('project_key', projectKey);
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await fetch(url.toString(), {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Word to Jira conversion failed: ${response.statusText}`);
-    }
-
-    return response.json();
   }
 
   // PDF to Notion conversion

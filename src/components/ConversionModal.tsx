@@ -127,57 +127,19 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
           break;
           
         case 'jira-to-word':
-          if (!projectKey) {
-            toast({
-              title: "Error",
-              description: "Please provide project key",
-              variant: "destructive",
-            });
-            return;
-          }
-          try {
-            await pdfApi.loginJira();
-            result = await pdfApi.jiraToWord(projectKey, jql);
-            downloadFile(result, "jira_export.docx");
-          } catch (error) {
-            if (error instanceof Error && error.message.includes('login')) {
-              toast({
-                title: "Authentication Required",
-                description: "Please complete Jira authentication in the popup",
-                variant: "destructive",
-              });
-            }
-            throw error;
-          }
+          // This case is now handled by JiraToWordFlow component
+          toast({
+            title: "Info",
+            description: "This feature has been moved to a dedicated flow",
+          });
           break;
           
         case 'word-to-jira':
-          if (files.length === 0 || !projectKey) {
-            toast({
-              title: "Error",
-              description: "Please select a Word file and provide project key",
-              variant: "destructive",
-            });
-            return;
-          }
-          try {
-            await pdfApi.loginJira();
-            result = await pdfApi.wordToJira(files[0], projectKey);
-            navigator.clipboard.writeText(result.content || JSON.stringify(result));
-            toast({
-              title: "Success",
-              description: "Jira content copied to clipboard",
-            });
-          } catch (error) {
-            if (error instanceof Error && error.message.includes('login')) {
-              toast({
-                title: "Authentication Required", 
-                description: "Please complete Jira authentication in the popup",
-                variant: "destructive",
-              });
-            }
-            throw error;
-          }
+          // This case is now handled by WordToJiraFlow component
+          toast({
+            title: "Info", 
+            description: "This feature has been moved to a dedicated flow",
+          });
           break;
           
         case 'pdf-to-notion':

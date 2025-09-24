@@ -15,17 +15,17 @@ interface ToolCardProps {
 export const ToolCard = ({ title, description, icon: Icon, color, onClick, comingSoon }: ToolCardProps) => {
   return (
     <Card className="h-full glass-card neon-border hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer group animate-slide-up" onClick={onClick}>
-      <CardContent className="p-8 text-center h-full flex flex-col relative overflow-hidden">
+      <CardContent className="p-6 text-center h-full flex flex-col relative overflow-hidden">
         {/* Background glow effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         
         <div className="relative z-10 flex flex-col h-full">
-          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-glow-pulse transition-all duration-300 ${color}`}>
-            <Icon className="h-10 w-10 text-white" />
+          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:animate-glow-pulse transition-all duration-300 ${color}`}>
+            <Icon className="h-8 w-8 text-white" />
           </div>
           
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <h3 className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <h3 className="text-lg font-bold group-hover:text-primary transition-colors duration-300">
               {title}
             </h3>
             {comingSoon && (
@@ -35,7 +35,7 @@ export const ToolCard = ({ title, description, icon: Icon, color, onClick, comin
             )}
           </div>
           
-          <p className="text-muted-foreground text-sm mb-6 flex-1 leading-relaxed">
+          <p className="text-muted-foreground text-sm mb-4 flex-1 leading-relaxed">
             {description}
           </p>
           

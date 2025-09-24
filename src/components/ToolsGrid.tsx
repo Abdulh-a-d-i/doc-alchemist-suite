@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { ToolCard } from "./ToolCard";
 import { ConversionModal } from "./ConversionModal";
+import { WordToJiraFlow } from "./WordToJiraFlow";
+import { JiraToWordFlow } from "./JiraToWordFlow";
 import { useNavigate } from "react-router-dom";
 
 interface Tool {
@@ -120,11 +122,17 @@ const tools: Tool[] = [
 
 export const ToolsGrid = () => {
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
+  const [showWordToJira, setShowWordToJira] = useState(false);
+  const [showJiraToWord, setShowJiraToWord] = useState(false);
   const navigate = useNavigate();
 
   const handleToolClick = (tool: Tool) => {
     if (tool.route) {
       navigate(tool.route);
+    } else if (tool.type === 'word-to-jira') {
+      setShowWordToJira(true);
+    } else if (tool.type === 'jira-to-word') {
+      setShowJiraToWord(true);
     } else if (!tool.comingSoon) {
       setSelectedTool(tool);
     }
@@ -132,7 +140,7 @@ export const ToolsGrid = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {tools.map((tool, index) => (
           <div 
             key={tool.id} 
@@ -158,6 +166,16 @@ export const ToolsGrid = () => {
           onOpenChange={(open) => !open && setSelectedTool(null)}
         />
       )}
+
+      <WordToJiraFlow
+        open={showWordToJira}
+        onOpenChange={setShowWordToJira}
+      />
+
+      <JiraToWordFlow
+        open={showJiraToWord}
+        onOpenChange={setShowJiraToWord}
+      />
     </>
   );
 };
