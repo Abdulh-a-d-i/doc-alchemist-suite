@@ -332,6 +332,8 @@
 // PDF conversion and processing API service with backend integration
 // PDF conversion and processing API service with backend integration
 
+// PDF conversion and processing API service with backend integration
+
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
 
@@ -357,7 +359,7 @@ class PdfAPI {
   private sessionId: string | null = null;
 
   // 🔑 Central helper to inject headers into every fetch
-  private async request(url: string, options: RequestInit = {}) {
+  private async request(url: string, options: RequestInit = {}): Promise<Response> {
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -376,7 +378,14 @@ class PdfAPI {
   }
 
   // Convert files using the /convert endpoint
-  async convert(file: File, target: string) {
+  async convert(file: File, target: string): Promise<Blob> {
+    if (!file) {
+      throw new Error("File is required");
+    }
+    if (!target) {
+      throw new Error("Target format is required");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("target", target);
@@ -390,7 +399,14 @@ class PdfAPI {
   }
 
   // Convert URL to PDF
-  async convertUrl(url: string, target: string) {
+  async convertUrl(url: string, target: string): Promise<Blob> {
+    if (!url) {
+      throw new Error("URL is required");
+    }
+    if (!target) {
+      throw new Error("Target format is required");
+    }
+
     const formData = new FormData();
     formData.append("url", url);
     formData.append("target", target);
@@ -404,7 +420,11 @@ class PdfAPI {
   }
 
   // Compress PDF files
-  async compress(file: File, level: string = "medium") {
+  async compress(file: File, level: string = "medium"): Promise<Blob> {
+    if (!file) {
+      throw new Error("File is required");
+    }
+
     const formData = new FormData();
     formData.append("compress_type", "pdf");
     formData.append("file", file);
@@ -419,7 +439,11 @@ class PdfAPI {
   }
 
   // Merge multiple PDF files
-  async merge(files: File[]) {
+  async merge(files: File[]): Promise<Blob> {
+    if (!files || files.length === 0) {
+      throw new Error("At least one file is required");
+    }
+
     const formData = new FormData();
     formData.append("merge_type", "pdf");
     files.forEach((file) => {
@@ -490,7 +514,7 @@ class PdfAPI {
   }
 
   // Get Jira projects
-  async getJiraProjects(state: string) {
+  async getJiraProjects(state: string): Promise<any> {
     if (!state) {
       throw new Error("State parameter is required");
     }
@@ -500,7 +524,7 @@ class PdfAPI {
   }
 
   // Get Jira request types for Service Desk
-  async getJiraRequestTypes(state: string, serviceDeskId: string) {
+  async getJiraRequestTypes(state: string, serviceDeskId: string): Promise<any> {
     if (!state || !serviceDeskId) {
       throw new Error("State and serviceDeskId are required");
     }
@@ -511,86 +535,96 @@ class PdfAPI {
     return response.json();
   }
 
-  // Create Jira issues
-// Improved version that only accepts object parameters to prevent parameter order errors
+  // Create Jira issues - Only accepts object parameters
   async createJiraIssues(options: JiraOptions): Promise<any> {
-  // Log inputs for debugging
-  console.log("Creating Jira issues with options:", {
-    state: options.state,
-    projectType: options.projectType,
-    tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
-    projectKey: options.projectKey,
-    serviceDeskId: options.serviceDeskId,
-    requestTypeId: options.requestTypeId,
-  });
-
-  // Validate inputs
-  if (!options.state || typeof options.state !== 'string') {
-    throw new Error("State must be a non-empty string");
-  }
-
-  if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
-    throw new Error("Project type must be 'software' or 'jsm'");
-  }
-
-  if (!options.tasks || !Array.isArray(options.tasks)) {
-    console.error("Invalid tasks:", options.tasks);
-    throw new Error("Tasks must be a non-empty array");
-  }
-
-  if (options.tasks.length === 0) {
-    throw new Error("Tasks array cannot be empty");
-  }
-
-  if (options.projectType === "software" && !options.projectKey) {
-    throw new Error("projectKey is required for software projects");
-  }
-
-  if (options.projectType === "jsm" && (!options.serviceDeskId || !options.requestTypeId)) {
-    throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
-  }
-
-  // Validate task structure
-  options.tasks.forEach((task, index) => {
-    if (!task || typeof task !== 'object' || !task.summary || typeof task.summary !== 'string') {
-      throw new Error(`Task at index ${index} is invalid: must be an object with a 'summary' string`);
+    // Validate that options object exists
+    if (!options || typeof options !== 'object') {
+      throw new Error("Options object is required");
     }
-  });
 
-  // Build payload
-  const payload: any = {
-    state: options.state,
-    project_type: options.projectType,
-    tasks: options.tasks,
-  };
+    // Log inputs for debugging
+    console.log("Creating Jira issues with options:", {
+      state: options.state,
+      projectType: options.projectType,
+      tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
+      tasksType: typeof options.tasks,
+      tasksIsArray: Array.isArray(options.tasks),
+      projectKey: options.projectKey,
+      serviceDeskId: options.serviceDeskId,
+      requestTypeId: options.requestTypeId,
+    });
 
-  if (options.projectType === "software") {
-    payload.project_key = options.projectKey;
+    // Validate state
+    if (!options.state || typeof options.state !== 'string') {
+      throw new Error("State must be a non-empty string");
+    }
+
+    // Validate projectType
+    if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
+      console.error("Invalid projectType:", options.projectType);
+      throw new Error("Project type must be 'software' or 'jsm'");
+    }
+
+    // Validate tasks
+    if (!options.tasks || !Array.isArray(options.tasks)) {
+      console.error("Invalid tasks:", options.tasks);
+      throw new Error("Tasks must be a non-empty array");
+    }
+
+    if (options.tasks.length === 0) {
+      throw new Error("Tasks array cannot be empty");
+    }
+
+    // Validate project-specific requirements
+    if (options.projectType === "software" && !options.projectKey) {
+      throw new Error("projectKey is required for software projects");
+    }
+
+    if (options.projectType === "jsm" && (!options.serviceDeskId || !options.requestTypeId)) {
+      throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
+    }
+
+    // Validate task structure
+    options.tasks.forEach((task, index) => {
+      if (!task || typeof task !== 'object' || !task.summary || typeof task.summary !== 'string') {
+        throw new Error(`Task at index ${index} is invalid: must be an object with a 'summary' string`);
+      }
+    });
+
+    // Build payload
+    const payload: any = {
+      state: options.state,
+      project_type: options.projectType,
+      tasks: options.tasks,
+    };
+
+    if (options.projectType === "software") {
+      payload.project_key = options.projectKey;
+    }
+
+    if (options.projectType === "jsm") {
+      payload.service_desk_id = options.serviceDeskId;
+      payload.request_type_id = options.requestTypeId;
+    }
+
+    console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
+
+    const response = await this.request(`${API_BASE_URL}/jira/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    console.log("✅ Issues created:", data);
+    return data;
   }
-
-  if (options.projectType === "jsm") {
-    payload.service_desk_id = options.serviceDeskId;
-    payload.request_type_id = options.requestTypeId;
-  }
-
-  console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
-
-  const response = await this.request(`${API_BASE_URL}/jira/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await response.json();
-  console.log("✅ Issues created:", data);
-  return data;
-}
 
   // Parse Word document to tasks
-  async parseWordToTasks(file: File) {
+  async parseWordToTasks(file: File): Promise<{ tasks: JiraTask[] }> {
     if (!file) {
       throw new Error("File is required");
     }
@@ -612,7 +646,7 @@ class PdfAPI {
   }
 
   // Get tasks by state
-  async getTasks(state: string) {
+  async getTasks(state: string): Promise<any> {
     if (!state) {
       throw new Error("State parameter is required");
     }
@@ -622,7 +656,7 @@ class PdfAPI {
   }
 
   // Clear session
-  async clearSession(state: string) {
+  async clearSession(state: string): Promise<any> {
     if (!state) {
       throw new Error("State parameter is required");
     }
@@ -634,7 +668,7 @@ class PdfAPI {
   }
 
   // Jira to Word conversion
-  async jiraToWord(state: string, projectKey?: string, jql?: string) {
+  async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
     if (!state) {
       throw new Error("State parameter is required");
     }
@@ -652,7 +686,7 @@ class PdfAPI {
   }
 
   // PDF to Notion conversion
-  async pdfToNotion(file: File) {
+  async pdfToNotion(file: File): Promise<any> {
     if (!file) {
       throw new Error("File is required");
     }
@@ -669,7 +703,7 @@ class PdfAPI {
   }
 
   // HTML to PDF conversion
-  async htmlToPdf(htmlContent?: string, url?: string) {
+  async htmlToPdf(htmlContent?: string, url?: string): Promise<Blob> {
     if (url) {
       return this.convertUrl(url, "pdf");
     } else if (htmlContent) {
@@ -682,4 +716,8 @@ class PdfAPI {
   }
 }
 
+// Export singleton instance
 export const pdfApi = new PdfAPI();
+
+// Export types for external use
+export type { JiraTask, JiraOptions };
