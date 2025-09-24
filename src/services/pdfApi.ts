@@ -330,6 +330,7 @@
 // PDF conversion and processing API service with backend integration
 
 // PDF conversion and processing API service with backend integration
+// PDF conversion and processing API service with backend integration
 
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
@@ -361,7 +362,7 @@ class PdfAPI {
       ...options,
       headers: {
         ...(options.headers || {}),
-        "ngrok-skip-browser-warning": "true", // bypass ngrok banner
+        "ngrok-skip-browser-warning": "true",
         "Accept": "application/json, text/plain, */*",
       },
     });
@@ -525,10 +526,19 @@ class PdfAPI {
     if (typeof optionsOrState === 'object') {
       options = optionsOrState;
     } else {
+      // Validate individual parameters to catch errors early
+      if (!projectType || !["software", "jsm"].includes(projectType)) {
+        console.error("Invalid projectType:", projectType);
+        throw new Error("projectType must be 'software' or 'jsm'");
+      }
+      if (!tasks || !Array.isArray(tasks)) {
+        console.error("Invalid tasks:", tasks);
+        throw new Error("tasks must be a non-empty array");
+      }
       options = {
         state: optionsOrState,
-        projectType: projectType!,
-        tasks: tasks!,
+        projectType,
+        tasks,
         projectKey,
         serviceDeskId,
         requestTypeId,
@@ -631,7 +641,12 @@ class PdfAPI {
       body: formData,
     });
 
-    return response.json();
+    const data = await response.json();
+    if (!data.tasks || !Array.isArray(data.tasks)) {
+      console.error("Invalid tasks from parseWordToTasks:", data.tasks);
+      throw new Error("Parsed tasks must be a non-empty array");
+    }
+    return data;
   }
 
   // Get tasks by state
