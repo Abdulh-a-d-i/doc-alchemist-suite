@@ -329,6 +329,8 @@
 // Complete PDF and Jira API service with bulletproof error handling
 // PDF conversion and processing API service with backend integration
 
+// PDF conversion and processing API service with backend integration
+
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
 
@@ -508,7 +510,7 @@ class PdfAPI {
     return response.json();
   }
 
-  // Create Jira issues with multiple call signatures
+  // Create Jira issues
   async createJiraIssues(
     optionsOrState: JiraOptions | string,
     projectType?: "software" | "jsm",
@@ -536,7 +538,7 @@ class PdfAPI {
     // Log inputs for debugging
     console.log("Creating Jira issues with options:", {
       state: options.state,
-      projectType: options(projectType,
+      projectType: options.projectType,
       tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
       tasksType: typeof options.tasks,
       tasksIsArray: Array.isArray(options.tasks),
@@ -701,9 +703,6 @@ class PdfAPI {
       throw new Error("Either HTML content or URL must be provided");
     }
   }
-}
-
-export const pdfApi = new PdfAPI();
 }
 
 export const pdfApi = new PdfAPI();
