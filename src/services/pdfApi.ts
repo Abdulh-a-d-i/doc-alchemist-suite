@@ -1,18 +1,33 @@
 // PDF conversion and processing API service with backend integration
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'https://full-shrimp-deeply.ngrok-free.app';
+const API_BASE_URL =
+  import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
 
 class PdfAPI {
   private sessionId: string | null = null;
 
+  // 🔑 central helper to inject headers into every fetch
+  private async request(url: string, options: RequestInit = {}) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        "ngrok-skip-browser-warning": "true", // bypass ngrok banner
+        "Accept": "application/json, text/plain, */*",
+      },
+    });
+
+    return response;
+  }
+
   // Convert files using the /convert endpoint
   async convert(file: File, target: string) {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('target', target);
+    formData.append("file", file);
+    formData.append("target", target);
 
-    const response = await fetch(`${API_BASE_URL}/convert`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/convert`, {
+      method: "POST",
       body: formData,
     });
 
@@ -26,11 +41,11 @@ class PdfAPI {
   // Convert URL to PDF
   async convertUrl(url: string, target: string) {
     const formData = new FormData();
-    formData.append('url', url);
-    formData.append('target', target);
+    formData.append("url", url);
+    formData.append("target", target);
 
-    const response = await fetch(`${API_BASE_URL}/convert-url`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/convert-url`, {
+      method: "POST",
       body: formData,
     });
 
@@ -42,14 +57,14 @@ class PdfAPI {
   }
 
   // Compress PDF files
-  async compress(file: File, level: string = 'medium') {
+  async compress(file: File, level: string = "medium") {
     const formData = new FormData();
-    formData.append('compress_type', 'pdf');
-    formData.append('file', file);
-    formData.append('level', level);
+    formData.append("compress_type", "pdf");
+    formData.append("file", file);
+    formData.append("level", level);
 
-    const response = await fetch(`${API_BASE_URL}/compress`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/compress`, {
+      method: "POST",
       body: formData,
     });
 
@@ -63,13 +78,13 @@ class PdfAPI {
   // Merge multiple PDF files
   async merge(files: File[]) {
     const formData = new FormData();
-    formData.append('merge_type', 'pdf');
-    files.forEach(file => {
-      formData.append('files', file);
+    formData.append("merge_type", "pdf");
+    files.forEach((file) => {
+      formData.append("files", file);
     });
 
-    const response = await fetch(`${API_BASE_URL}/merge`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/merge`, {
+      method: "POST",
       body: formData,
     });
 
@@ -80,16 +95,11 @@ class PdfAPI {
     return response.blob();
   }
 
-  // Split PDF (not in backend spec, keeping for compatibility)
-  async split(file: File, pages: string) {
-    throw new Error('Split functionality not available in current backend');
-  }
-
   // Jira authentication with state
   async loginJira(state: string): Promise<void> {
     const url = `${API_BASE_URL}/login/jira?state=${state}`;
-    const popup = window.open(url, 'jira-auth', 'width=600,height=700');
-    
+    const popup = window.open(url, "jira-auth", "width=600,height=700");
+
     return new Promise((resolve, reject) => {
       const checkClosed = setInterval(() => {
         if (popup?.closed) {
@@ -98,40 +108,42 @@ class PdfAPI {
         }
       }, 1000);
 
-      // Listen for auth success message
       const messageHandler = (event: MessageEvent) => {
-        if (event.data === 'jira_auth_success') {
+        if (event.data === "jira_auth_success") {
           clearInterval(checkClosed);
           popup?.close();
-          window.removeEventListener('message', messageHandler);
+          window.removeEventListener("message", messageHandler);
           resolve();
         }
       };
-      window.addEventListener('message', messageHandler);
+      window.addEventListener("message", messageHandler);
 
-      // Timeout after 5 minutes
       setTimeout(() => {
         clearInterval(checkClosed);
         popup?.close();
-        window.removeEventListener('message', messageHandler);
-        reject(new Error('Authentication timeout'));
+        window.removeEventListener("message", messageHandler);
+        reject(new Error("Authentication timeout"));
       }, 300000);
     });
   }
 
   // Check Jira authentication status
   async checkJiraStatus(state: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/jira/status?state=${state}`);
+    const response = await this.request(
+      `${API_BASE_URL}/jira/status?state=${state}`
+    );
     const data = await response.json();
-    
+
     if (!data.authenticated) {
-      throw new Error('Jira authentication failed');
+      throw new Error("Jira authentication failed");
     }
   }
 
   // Get Jira projects
   async getJiraProjects(state: string) {
-    const response = await fetch(`${API_BASE_URL}/jira/projects?state=${state}`);
+    const response = await this.request(
+      `${API_BASE_URL}/jira/projects?state=${state}`
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch projects: ${response.statusText}`);
     }
@@ -140,7 +152,9 @@ class PdfAPI {
 
   // Get Jira request types for Service Desk
   async getJiraRequestTypes(state: string, serviceDeskId: string) {
-    const response = await fetch(`${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`);
+    const response = await this.request(
+      `${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch request types: ${response.statusText}`);
     }
@@ -149,10 +163,10 @@ class PdfAPI {
 
   // Create Jira issues
   async createJiraIssues(state: string, tasks: any[]) {
-    const response = await fetch(`${API_BASE_URL}/jira/create`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/jira/create`, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ state, tasks }),
     });
@@ -167,10 +181,10 @@ class PdfAPI {
   // Parse Word document to tasks
   async parseWordToTasks(file: File) {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/convert/word-to-jira`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/convert/word-to-jira`, {
+      method: "POST",
       body: formData,
     });
 
@@ -183,7 +197,7 @@ class PdfAPI {
 
   // Get tasks by state
   async getTasks(state: string) {
-    const response = await fetch(`${API_BASE_URL}/tasks/${state}`);
+    const response = await this.request(`${API_BASE_URL}/tasks/${state}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch tasks: ${response.statusText}`);
     }
@@ -192,8 +206,8 @@ class PdfAPI {
 
   // Clear session
   async clearSession(state: string) {
-    const response = await fetch(`${API_BASE_URL}/session/${state}`, {
-      method: 'DELETE',
+    const response = await this.request(`${API_BASE_URL}/session/${state}`, {
+      method: "DELETE",
     });
     if (!response.ok) {
       throw new Error(`Failed to clear session: ${response.statusText}`);
@@ -204,12 +218,12 @@ class PdfAPI {
   // Jira to Word conversion
   async jiraToWord(state: string, projectKey?: string, jql?: string) {
     const url = new URL(`${API_BASE_URL}/convert/jira-to-word`);
-    if (projectKey) url.searchParams.append('project_key', projectKey);
-    if (jql) url.searchParams.append('jql', jql);
-    url.searchParams.append('state', state);
+    if (projectKey) url.searchParams.append("project_key", projectKey);
+    if (jql) url.searchParams.append("jql", jql);
+    url.searchParams.append("state", state);
 
-    const response = await fetch(url.toString(), {
-      method: 'POST',
+    const response = await this.request(url.toString(), {
+      method: "POST",
     });
 
     if (!response.ok) {
@@ -222,10 +236,10 @@ class PdfAPI {
   // PDF to Notion conversion
   async pdfToNotion(file: File) {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response = await fetch(`${API_BASE_URL}/convert/pdf-to-notion`, {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/convert/pdf-to-notion`, {
+      method: "POST",
       body: formData,
     });
 
@@ -239,14 +253,13 @@ class PdfAPI {
   // HTML to PDF conversion
   async htmlToPdf(htmlContent?: string, url?: string) {
     if (url) {
-      return this.convertUrl(url, 'pdf');
+      return this.convertUrl(url, "pdf");
     } else if (htmlContent) {
-      // Create temporary HTML file
-      const blob = new Blob([htmlContent], { type: 'text/html' });
-      const file = new File([blob], 'content.html', { type: 'text/html' });
-      return this.convert(file, 'pdf');
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      const file = new File([blob], "content.html", { type: "text/html" });
+      return this.convert(file, "pdf");
     } else {
-      throw new Error('Either HTML content or URL must be provided');
+      throw new Error("Either HTML content or URL must be provided");
     }
   }
 }
