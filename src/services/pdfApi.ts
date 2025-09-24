@@ -162,21 +162,53 @@ class PdfAPI {
   }
 
   // Create Jira issues
-  async createJiraIssues(state: string, tasks: any[]) {
-    const response = await this.request(`${API_BASE_URL}/jira/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ state, tasks }),
-    });
+  async createJiraIssues(
+  state: string,
+  projectType: "software" | "jsm",
+  projectKey?: string,
+  serviceDeskId?: string,
+  requestTypeId?: string,
+  tasks?: any[]
+) {
+  const payload: any = {
+    state,
+    project_type: projectType,
+    project_key: projectKey,
+    service_desk_id: serviceDeskId,
+    request_type_id: requestTypeId,
+    tasks, // optional, if not passed backend falls back to session
+  };
 
-    if (!response.ok) {
-      throw new Error(`Failed to create issues: ${response.statusText}`);
-    }
+  const response = await fetch(`${API_BASE_URL}/jira/create`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true'
+    },
+    body: JSON.stringify(payload),
+  });
 
-    return response.json();
+  if (!response.ok) {
+    throw new Error(`Failed to create issues: ${response.statusText}`);
   }
+  return response.json();
+}
+
+  // async createJiraIssues(state: string, tasks: any[]) {
+  //   const response = await this.request(`${API_BASE_URL}/jira/create`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ state, tasks }),
+  //   });
+
+  //   if (!response.ok) {
+  //     throw new Error(`Failed to create issues: ${response.statusText}`);
+  //   }
+
+  //   return response.json();
+  // }
 
   // Parse Word document to tasks
   async parseWordToTasks(file: File) {
