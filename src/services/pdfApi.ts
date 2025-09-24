@@ -512,120 +512,82 @@ class PdfAPI {
   }
 
   // Create Jira issues
-  async createJiraIssues(
-    optionsOrState: JiraOptions | string,
-    projectType?: "software" | "jsm",
-    tasks?: JiraTask[],
-    projectKey?: string,
-    serviceDeskId?: string,
-    requestTypeId?: string
-  ): Promise<any> {
-    let options: JiraOptions;
+// Improved version that only accepts object parameters to prevent parameter order errors
+  async createJiraIssues(options: JiraOptions): Promise<any> {
+  // Log inputs for debugging
+  console.log("Creating Jira issues with options:", {
+    state: options.state,
+    projectType: options.projectType,
+    tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
+    projectKey: options.projectKey,
+    serviceDeskId: options.serviceDeskId,
+    requestTypeId: options.requestTypeId,
+  });
 
-    // Handle both object and individual parameter calls
-    if (typeof optionsOrState === 'object') {
-      options = optionsOrState;
-    } else {
-      // Validate individual parameters to catch errors early
-      if (!projectType || !["software", "jsm"].includes(projectType)) {
-        console.error("Invalid projectType:", projectType);
-        throw new Error("projectType must be 'software' or 'jsm'");
-      }
-      if (!tasks || !Array.isArray(tasks)) {
-        console.error("Invalid tasks:", tasks);
-        throw new Error("tasks must be a non-empty array");
-      }
-      options = {
-        state: optionsOrState,
-        projectType,
-        tasks,
-        projectKey,
-        serviceDeskId,
-        requestTypeId,
-      };
-    }
-
-    // Log inputs for debugging
-    console.log("Creating Jira issues with options:", {
-      state: options.state,
-      projectType: options.projectType,
-      tasks: options.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
-      tasksType: typeof options.tasks,
-      tasksIsArray: Array.isArray(options.tasks),
-      projectKey: options.projectKey,
-      serviceDeskId: options.serviceDeskId,
-      requestTypeId: options.requestTypeId,
-    });
-
-    // Validate inputs
-    if (!options.state || typeof options.state !== 'string') {
-      throw new Error("State must be a non-empty string");
-    }
-
-    if (Array.isArray(options.projectType)) {
-      console.error("Invalid projectType:", options.projectType);
-      throw new Error("Project type must be 'software' or 'jsm', received an array");
-    }
-
-    if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
-      throw new Error("Project type must be 'software' or 'jsm'");
-    }
-
-    if (!options.tasks || !Array.isArray(options.tasks)) {
-      console.error("Invalid tasks:", options.tasks);
-      throw new Error("Tasks must be a non-empty array");
-    }
-
-    if (options.tasks.length === 0) {
-      throw new Error("Tasks array cannot be empty");
-    }
-
-    if (options.projectType === "software" && !options.projectKey) {
-      throw new Error("projectKey is required for software projects");
-    }
-
-    if (options.projectType === "jsm" && (!options.serviceDeskId || !options.requestTypeId)) {
-      throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
-    }
-
-    // Validate task structure
-    options.tasks.forEach((task, index) => {
-      if (!task || typeof task !== 'object' || !task.summary || typeof task.summary !== 'string') {
-        throw new Error(`Task at index ${index} is invalid: must be an object with a 'summary' string`);
-      }
-    });
-
-    // Build payload
-    const payload: any = {
-      state: options.state,
-      project_type: options.projectType,
-      tasks: options.tasks,
-    };
-
-    if (options.projectType === "software") {
-      payload.project_key = options.projectKey;
-    }
-
-    if (options.projectType === "jsm") {
-      payload.service_desk_id = options.serviceDeskId;
-      payload.request_type_id = options.requestTypeId;
-    }
-
-    console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
-
-    const response = await this.request(`${API_BASE_URL}/jira/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "true",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-    console.log("✅ Issues created:", data);
-    return data;
+  // Validate inputs
+  if (!options.state || typeof options.state !== 'string') {
+    throw new Error("State must be a non-empty string");
   }
+
+  if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
+    throw new Error("Project type must be 'software' or 'jsm'");
+  }
+
+  if (!options.tasks || !Array.isArray(options.tasks)) {
+    console.error("Invalid tasks:", options.tasks);
+    throw new Error("Tasks must be a non-empty array");
+  }
+
+  if (options.tasks.length === 0) {
+    throw new Error("Tasks array cannot be empty");
+  }
+
+  if (options.projectType === "software" && !options.projectKey) {
+    throw new Error("projectKey is required for software projects");
+  }
+
+  if (options.projectType === "jsm" && (!options.serviceDeskId || !options.requestTypeId)) {
+    throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
+  }
+
+  // Validate task structure
+  options.tasks.forEach((task, index) => {
+    if (!task || typeof task !== 'object' || !task.summary || typeof task.summary !== 'string') {
+      throw new Error(`Task at index ${index} is invalid: must be an object with a 'summary' string`);
+    }
+  });
+
+  // Build payload
+  const payload: any = {
+    state: options.state,
+    project_type: options.projectType,
+    tasks: options.tasks,
+  };
+
+  if (options.projectType === "software") {
+    payload.project_key = options.projectKey;
+  }
+
+  if (options.projectType === "jsm") {
+    payload.service_desk_id = options.serviceDeskId;
+    payload.request_type_id = options.requestTypeId;
+  }
+
+  console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
+
+  const response = await this.request(`${API_BASE_URL}/jira/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+  console.log("✅ Issues created:", data);
+  return data;
+}
 
   // Parse Word document to tasks
   async parseWordToTasks(file: File) {
