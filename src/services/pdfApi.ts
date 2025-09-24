@@ -171,7 +171,12 @@ class PdfAPI {
   requestTypeId?: string
 ) {
   try {
-    let payload: any = { state, project_type: projectType, tasks };
+    // ✅ Always send project_type as string + tasks as array
+    const payload: any = {
+      state,
+      project_type: projectType,
+      tasks
+    };
 
     if (projectType === "software") {
       if (!projectKey) {
@@ -188,20 +193,24 @@ class PdfAPI {
       payload.request_type_id = requestTypeId;
     }
 
-    console.log("🚀 Sending payload to backend:", payload);
+    console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
 
     const res = await fetch(`${API_BASE_URL}/jira/create`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
       body: JSON.stringify(payload),
     });
 
+    const data = await res.json();
+
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Failed to create Jira issues");
+      console.error("❌ Backend returned error:", data);
+      throw new Error(data.detail || "Failed to create Jira issues");
     }
 
-    const data = await res.json();
     console.log("✅ Issues created:", data);
     return data;
   } catch (err) {
@@ -209,7 +218,6 @@ class PdfAPI {
     throw err;
   }
 }
-
   // async createJiraIssues(state: string, tasks: any[]) {
   //   const response = await this.request(`${API_BASE_URL}/jira/create`, {
   //     method: "POST",
