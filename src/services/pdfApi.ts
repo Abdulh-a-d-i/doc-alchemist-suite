@@ -162,13 +162,16 @@ class PdfAPI {
   }
 
   // Create Jira issues
-  async function createJiraIssues(state: string, projectType: "software" | "jsm", tasks: any[], projectKey?: string, serviceDeskId?: string, requestTypeId?: string) {
+  async createJiraIssues(
+  state: string,
+  projectType: "software" | "jsm",
+  tasks: any[],
+  projectKey?: string,
+  serviceDeskId?: string,
+  requestTypeId?: string
+) {
   try {
-    let payload: any = {
-      state,
-      project_type: projectType,
-      tasks
-    };
+    let payload: any = { state, project_type: projectType, tasks };
 
     if (projectType === "software") {
       if (!projectKey) {
@@ -187,7 +190,7 @@ class PdfAPI {
 
     console.log("🚀 Sending payload to backend:", payload);
 
-    const res = await fetch(`${BACKEND_URL}/jira/create`, {
+    const res = await fetch(`${API_BASE_URL}/jira/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
