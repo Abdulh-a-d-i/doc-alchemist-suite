@@ -170,14 +170,14 @@ class PdfAPI {
   requestTypeId?: string,
   tasks?: any[]
 ) {
-  const payload: any = {
-    state,
-    project_type: projectType,
-    project_key: projectKey,
-    service_desk_id: serviceDeskId,
-    request_type_id: requestTypeId,
-    tasks, // optional, if not passed backend falls back to session
-  };
+  const payload = {
+  state,
+  project_type: "software",  // or "jsm"
+  project_key: "DEMO",       // required if software
+  service_desk_id,           // required if jsm
+  request_type_id,           // required if jsm
+  tasks                      // optional
+};
 
   const response = await fetch(`${API_BASE_URL}/jira/create`, {
     method: 'POST',
