@@ -14,22 +14,28 @@ interface ToolCardProps {
 
 export const ToolCard = ({ title, description, icon: Icon, color, onClick, comingSoon }: ToolCardProps) => {
   return (
-    <Card className="h-full glass-card neon-border hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer group animate-slide-up" onClick={onClick}>
-      <CardContent className="p-6 text-center h-full flex flex-col relative overflow-hidden">
-        {/* Background glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <Card className="group h-full glass-card neon-border hover-lift cursor-pointer relative overflow-hidden" onClick={onClick}>
+      <CardContent className="p-6 text-center h-full flex flex-col relative">
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-all duration-700"></div>
+        
+        {/* Floating geometric shapes */}
+        <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-xl floating opacity-30"></div>
+        <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-gradient-to-tr from-accent/20 to-primary/20 rounded-full blur-lg floating-delayed opacity-20"></div>
         
         <div className="relative z-10 flex flex-col h-full">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:animate-glow-pulse transition-all duration-300 ${color}`}>
-            <Icon className="h-8 w-8 text-white" />
+          <div className={`relative w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-all duration-500 ${color}`}>
+            {/* Icon glow effect */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent opacity-50"></div>
+            <Icon className="h-7 w-7 text-white relative z-10 drop-shadow-lg" />
           </div>
           
           <div className="flex items-center justify-center gap-2 mb-3">
-            <h3 className="text-lg font-bold group-hover:text-primary transition-colors duration-300">
+            <h3 className="text-lg font-heading font-semibold group-hover:text-primary transition-colors duration-300">
               {title}
             </h3>
             {comingSoon && (
-              <Badge variant="secondary" className="text-xs bg-warning/20 text-warning animate-bounce-slow">
+              <Badge variant="secondary" className="text-xs bg-warning/20 text-warning border-warning/30 pulse-glow">
                 Soon
               </Badge>
             )}
@@ -40,11 +46,25 @@ export const ToolCard = ({ title, description, icon: Icon, color, onClick, comin
           </p>
           
           <Button 
-            variant="outline" 
-            className="w-full glass-card group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary/50 transition-all duration-300 font-medium"
+            variant={comingSoon ? "secondary" : "default"}
+            size="sm"
+            className={`w-full transition-all duration-500 ${
+              comingSoon 
+                ? "glass-card border-muted" 
+                : "bg-gradient-to-r from-primary to-primary-hover hover:from-primary-hover hover:to-primary border-primary/30 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/25"
+            }`}
             disabled={comingSoon}
           >
-            {comingSoon ? "Coming Soon" : "Select Files"}
+            {comingSoon ? (
+              <span className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-warning rounded-full animate-pulse"></div>
+                Coming Soon
+              </span>
+            ) : (
+              <span className="font-medium">
+                Select Files
+              </span>
+            )}
           </Button>
         </div>
       </CardContent>

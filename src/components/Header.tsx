@@ -26,41 +26,49 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 glass-card border-b border-primary/20 backdrop-blur-xl">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-50 glass-surface border-b border-primary/20 backdrop-blur-3xl">
+        <div className="container mx-auto px-6 py-5 flex items-center justify-between">
           <div 
-            className="flex items-center space-x-2 cursor-pointer group" 
+            className="flex items-center space-x-3 cursor-pointer group" 
             onClick={() => navigate('/')}
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center group-hover:animate-glow-pulse transition-all">
-              <FileText className="h-6 w-6 text-primary-foreground" />
+            <div className="relative w-12 h-12 bg-gradient-to-br from-primary via-accent to-primary rounded-2xl flex items-center justify-center group-hover:scale-110 hover-glow transition-all duration-500 overflow-hidden">
+              {/* Animated background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-50"></div>
+              <FileText className="h-7 w-7 text-white relative z-10 drop-shadow-lg" />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              PDFTools
-            </h1>
+            <div>
+              <h1 className="text-2xl font-heading font-bold gradient-text">
+                PDFTools
+              </h1>
+              <p className="text-xs text-muted-foreground font-mono tracking-wider">
+                AI-POWERED SUITE
+              </p>
+            </div>
           </div>
           
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => navigate(item.href)}
-                className="relative text-muted-foreground hover:text-primary transition-colors duration-300 group"
+                className="relative text-muted-foreground hover:text-primary transition-all duration-300 group font-medium"
               >
                 {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-500 rounded-full"></span>
+                <span className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg -z-10"></span>
               </button>
             ))}
           </nav>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             {isLoggedIn ? (
               <div className="flex items-center space-x-3">
-                <Button variant="ghost" size="sm" className="glass-card">
+                <Button variant="ghost" size="sm" className="glass-card hover-glow">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </Button>
-                <Button variant="ghost" size="sm" onClick={handleLogout} className="glass-card">
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="glass-card hover:bg-destructive/10 hover:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout
                 </Button>
@@ -70,13 +78,13 @@ export const Header = () => {
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowLogin(true)}
-                  className="glass-card hidden md:inline-flex"
+                  className="glass-card hidden md:inline-flex hover-glow"
                 >
                   Login
                 </Button>
                 <Button 
                   onClick={() => setShowSignup(true)}
-                  className="glow-effect hidden md:inline-flex"
+                  className="bg-gradient-to-r from-primary to-accent hover:from-primary-hover hover:to-accent/80 border-primary/30 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/25 hidden md:inline-flex font-medium"
                 >
                   Sign Up
                 </Button>

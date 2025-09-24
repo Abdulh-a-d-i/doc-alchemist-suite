@@ -11,41 +11,64 @@ const Index = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative py-20 px-4 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5"></div>
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      <section className="relative py-24 px-4 overflow-hidden">
+        {/* Enhanced Background Effects */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/8 via-background to-accent/8"></div>
+          <div className="absolute top-32 left-16 w-80 h-80 bg-gradient-to-r from-primary/15 to-transparent rounded-full blur-3xl floating"></div>
+          <div className="absolute bottom-32 right-16 w-96 h-96 bg-gradient-to-l from-accent/15 to-transparent rounded-full blur-3xl floating-delayed"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-2xl floating" style={{ animationDelay: '4s' }}></div>
+        </div>
         
         <div className="container mx-auto text-center relative z-10">
-          <div className="flex justify-center mb-6">
-            <div className="w-24 h-24 bg-gradient-to-r from-primary via-purple-500 to-accent rounded-2xl flex items-center justify-center animate-glow-pulse shadow-2xl">
-              <FileText className="h-12 w-12 text-white" />
+          {/* Logo Animation */}
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="w-28 h-28 bg-gradient-to-br from-primary via-purple-500 to-accent rounded-3xl flex items-center justify-center hover-glow shadow-2xl transition-all duration-700 hover:scale-110">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-3xl"></div>
+                <FileText className="h-14 w-14 text-white relative z-10 drop-shadow-2xl" />
+              </div>
+              {/* Orbital rings */}
+              <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-rotate-slow"></div>
+              <div className="absolute inset-2 border border-accent/20 rounded-full animate-rotate-slow" style={{ animationDirection: 'reverse' }}></div>
             </div>
           </div>
           
-          <div className="space-y-6 animate-slide-up">
-            <h1 className="text-4xl md:text-7xl font-bold bg-gradient-to-r from-primary via-purple-400 to-accent bg-clip-text text-transparent leading-tight">
-              Future of PDF Tools
-            </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              Experience next-generation PDF processing with AI-powered tools. 
-              Convert, compress, merge, and transform your documents in seconds.
-            </p>
-            
-            {/* Search Bar */}
-            <div className="max-w-lg mx-auto my-8">
-              <SearchBar />
+          <div className="space-y-8 animate-fade-up">
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-8xl font-heading font-bold gradient-text leading-none tracking-tight">
+                FUTURE OF
+                <br />
+                <span className="text-glow">PDF TOOLS</span>
+              </h1>
+              <div className="flex justify-center">
+                <div className="h-1 w-32 bg-gradient-to-r from-primary via-accent to-primary rounded-full glow-primary"></div>
+              </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="text-lg px-8 py-4 glow-effect group">
-                <Rocket className="h-5 w-5 mr-2 group-hover:animate-bounce" />
-                Start Processing
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light">
+              Experience next-generation PDF processing with{" "}
+              <span className="text-primary font-medium">AI-powered intelligence</span>. 
+              Convert, compress, merge, and transform your documents with{" "}
+              <span className="text-accent font-medium">unprecedented speed</span>.
+            </p>
+            
+            {/* Enhanced Search Bar */}
+            <div className="max-w-xl mx-auto my-12">
+              <div className="relative glass-card p-2 rounded-2xl neon-border">
+                <SearchBar />
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Button size="lg" className="text-lg px-10 py-5 bg-gradient-to-r from-primary to-accent hover:from-primary-hover hover:to-accent/80 border-primary/30 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/30 transition-all duration-500 group relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-shimmer animate-shimmer opacity-0 group-hover:opacity-100"></div>
+                <Rocket className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="relative z-10 font-semibold">Start Processing</span>
               </Button>
-              <Button variant="outline" size="lg" className="text-lg px-8 py-4 glass-card">
-                <Sparkles className="h-5 w-5 mr-2" />
-                View All Tools
+              <Button variant="outline" size="lg" className="text-lg px-10 py-5 glass-card hover-glow border-primary/20 hover:border-primary/40 group">
+                <Sparkles className="h-6 w-6 mr-3 group-hover:animate-pulse" />
+                <span className="font-medium">Explore Tools</span>
               </Button>
             </div>
           </div>
@@ -53,14 +76,25 @@ const Index = () => {
       </section>
 
       {/* Tools Section */}
-      <section id="tools" className="py-16 px-4 relative">
-        <div className="container mx-auto">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+      <section id="tools" className="py-20 px-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent"></div>
+        
+        <div className="container mx-auto relative z-10">
+          <div className="text-center mb-16 animate-fade-up">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary"></div>
+              <span className="text-sm font-mono tracking-wider text-primary uppercase">
+                COMPREHENSIVE SUITE
+              </span>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary"></div>
+            </div>
+            
+            <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6 gradient-text">
               All PDF Tools in One Place
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Choose from our comprehensive collection of AI-powered PDF tools. 
+              Choose from our comprehensive collection of{" "}
+              <span className="text-primary font-medium">AI-powered PDF tools</span>. 
               Each tool is designed for maximum speed, security, and ease of use.
             </p>
           </div>
@@ -84,40 +118,61 @@ const Index = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="glass-card neon-border floating-animation group hover:scale-105 transition-all duration-300" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-glow-pulse">
-                  <Zap className="h-10 w-10 text-white" />
+            <Card className="glass-card neon-border hover-lift group relative overflow-hidden" style={{ animationDelay: '0s' }}>
+              <CardContent className="p-8 text-center relative z-10">
+                {/* Background pattern */}
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute top-4 right-4 w-32 h-32 border border-primary/20 rounded-full"></div>
+                  <div className="absolute bottom-4 left-4 w-24 h-24 border border-accent/20 rounded-full"></div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Lightning Fast</h3>
+                
+                <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
+                  <Zap className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
+                </div>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Lightning Fast</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  AI-optimized processing engines deliver results in milliseconds. 
+                  AI-optimized processing engines deliver results in{" "}
+                  <span className="text-yellow-400 font-medium">milliseconds</span>. 
                   Experience the future of document processing speed.
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="glass-card neon-border floating-animation group hover:scale-105 transition-all duration-300" style={{ animationDelay: '0.2s' }}>
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-glow-pulse">
-                  <Shield className="h-10 w-10 text-white" />
+            <Card className="glass-card neon-border hover-lift group relative overflow-hidden" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="p-8 text-center relative z-10">
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute top-4 left-4 w-28 h-28 border border-green-400/20 rounded-full"></div>
+                  <div className="absolute bottom-4 right-4 w-36 h-36 border border-blue-400/20 rounded-full"></div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Military-Grade Security</h3>
+                
+                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
+                  <Shield className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
+                </div>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Military-Grade Security</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  End-to-end encryption with automatic file deletion. 
+                  <span className="text-green-400 font-medium">End-to-end encryption</span> with automatic file deletion. 
                   Your documents are processed securely and never stored.
                 </p>
               </CardContent>
             </Card>
             
-            <Card className="glass-card neon-border floating-animation group hover:scale-105 transition-all duration-300" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-glow-pulse">
-                  <Users className="h-10 w-10 text-white" />
+            <Card className="glass-card neon-border hover-lift group relative overflow-hidden" style={{ animationDelay: '0.4s' }}>
+              <CardContent className="p-8 text-center relative z-10">
+                <div className="absolute inset-0 opacity-5">
+                  <div className="absolute top-4 right-4 w-32 h-32 border border-purple-400/20 rounded-full"></div>
+                  <div className="absolute bottom-4 left-4 w-28 h-28 border border-pink-400/20 rounded-full"></div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Intuitive Design</h3>
+                
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
+                  <Users className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
+                </div>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Intuitive Design</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Streamlined interface powered by user research. 
+                  Streamlined interface powered by{" "}
+                  <span className="text-purple-400 font-medium">user research</span>. 
                   Complex operations made simple with smart automation.
                 </p>
               </CardContent>
