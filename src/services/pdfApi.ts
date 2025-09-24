@@ -895,7 +895,3 @@ class PdfAPI {
 }
 
 export const pdfApi = new PdfAPI();
-  }
-}
-
-export const pdfApi = new PdfAPI();
