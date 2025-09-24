@@ -326,19 +326,38 @@
 // Fixed PDF conversion and processing API service with backend integration
 // Fixed PDF conversion and processing API service with backend integration
 
+// Complete PDF and Jira API service with bulletproof error handling
+
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
+
+interface JiraTask {
+  summary: string;
+  description?: string;
+  priority?: string;
+  assignee?: string;
+  labels?: string[];
+  [key: string]: any;
+}
+
+interface CreateJiraOptions {
+  state: string;
+  projectType: "software" | "jsm";
+  tasks: JiraTask[];
+  projectKey?: string;
+  serviceDeskId?: string;
+  requestTypeId?: string;
+}
 
 class PdfAPI {
   private sessionId: string | null = null;
 
-  // 🔑 central helper to inject headers into every fetch
   private async request(url: string, options: RequestInit = {}) {
     const response = await fetch(url, {
       ...options,
       headers: {
         ...(options.headers || {}),
-        "ngrok-skip-browser-warning": "true", // bypass ngrok banner
+        "ngrok-skip-browser-warning": "true",
         "Accept": "application/json, text/plain, */*",
       },
     });
@@ -421,24 +440,33 @@ class PdfAPI {
     return response.blob();
   }
 
-  // Jira authentication with state - Enhanced with better error handling
+  // Enhanced Jira authentication
   async loginJira(state: string): Promise<void> {
+    if (!state) {
+      throw new Error("State parameter is required for authentication");
+    }
+
     const url = `${API_BASE_URL}/login/jira?state=${state}`;
-    console.log('🔵 FRONTEND: Opening Jira auth popup:', url);
+    console.log('Opening Jira auth popup:', url);
     
-    const popup = window.open(url, "jira-auth", "width=600,height=700");
+    const popup = window.open(url, "jira-auth", "width=600,height=700,scrollbars=yes,resizable=yes");
+    
+    if (!popup) {
+      throw new Error("Failed to open popup window. Please allow popups for this site.");
+    }
 
     return new Promise((resolve, reject) => {
       let resolved = false;
       
       const cleanup = () => {
         clearInterval(checkClosed);
+        clearTimeout(timeoutId);
         window.removeEventListener("message", messageHandler);
       };
 
       const checkClosed = setInterval(() => {
-        if (popup?.closed && !resolved) {
-          console.log('🔵 FRONTEND: Popup closed, checking auth status...');
+        if (popup.closed && !resolved) {
+          console.log('Popup closed, checking auth status...');
           cleanup();
           resolved = true;
           this.checkJiraStatus(state).then(resolve).catch(reject);
@@ -446,144 +474,213 @@ class PdfAPI {
       }, 1000);
 
       const messageHandler = (event: MessageEvent) => {
-        console.log('🔵 FRONTEND: Received message:', event.data);
-        if (event.data && event.data.type === "jira_auth_success" && event.data.state === state) {
-          console.log('✅ FRONTEND: Auth success message received');
-          if (!resolved) {
-            resolved = true;
-            cleanup();
-            popup?.close();
-            resolve();
-          }
-        } else if (event.data && event.data.type === "jira_auth_error") {
-          console.error('❌ FRONTEND: Auth error message received:', event.data.error);
-          if (!resolved) {
-            resolved = true;
-            cleanup();
-            popup?.close();
-            reject(new Error(event.data.error || "Authentication failed"));
+        console.log('Received auth message:', event.data);
+        
+        if (event.data && typeof event.data === 'object') {
+          if (event.data.type === "jira_auth_success" && event.data.state === state) {
+            console.log('Auth success confirmed');
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              popup.close();
+              resolve();
+            }
+          } else if (event.data.type === "jira_auth_error") {
+            console.error('Auth error received:', event.data.error);
+            if (!resolved) {
+              resolved = true;
+              cleanup();
+              popup.close();
+              reject(new Error(event.data.error || "Authentication failed"));
+            }
           }
         }
       };
       
       window.addEventListener("message", messageHandler);
 
-      // Longer timeout for authentication
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (!resolved) {
-          console.log('⏰ FRONTEND: Authentication timeout');
+          console.log('Authentication timeout');
           resolved = true;
           cleanup();
-          popup?.close();
-          reject(new Error("Authentication timeout"));
+          popup.close();
+          reject(new Error("Authentication timeout after 5 minutes"));
         }
-      }, 300000); // 5 minutes
+      }, 300000);
     });
   }
 
   // Check Jira authentication status
-  async checkJiraStatus(state: string): Promise<void> {
-    console.log('🔵 FRONTEND: Checking Jira status for state:', state);
+  async checkJiraStatus(state: string): Promise<boolean> {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
+    console.log('Checking Jira status for state:', state);
     
     const response = await this.request(
       `${API_BASE_URL}/jira/status?state=${state}`
     );
-    const data = await response.json();
-
-    console.log('🔵 FRONTEND: Auth status response:', data);
-
-    if (!data.authenticated) {
-      throw new Error("Jira authentication failed");
+    
+    if (!response.ok) {
+      throw new Error(`Failed to check auth status: ${response.statusText}`);
     }
+    
+    const data = await response.json();
+    console.log('Auth status response:', data);
+
+    return data.authenticated === true;
   }
 
   // Get Jira projects
   async getJiraProjects(state: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const response = await this.request(
       `${API_BASE_URL}/jira/projects?state=${state}`
     );
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch projects: ${response.statusText} - ${errorText}`);
     }
+    
     return response.json();
   }
 
   // Get Jira request types for Service Desk
   async getJiraRequestTypes(state: string, serviceDeskId: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+    if (!serviceDeskId) {
+      throw new Error("Service desk ID is required");
+    }
+
     const response = await this.request(
       `${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`
     );
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch request types: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch request types: ${response.statusText} - ${errorText}`);
     }
+    
     return response.json();
   }
 
-  // ✅ FIXED: Create Jira issues with proper error handling and validation
+  // BULLETPROOF Jira issue creation with multiple call signatures
+  async createJiraIssues(options: CreateJiraOptions): Promise<any>;
   async createJiraIssues(
     state: string,
     projectType: "software" | "jsm",
-    tasks: any[],
+    tasks: JiraTask[],
     projectKey?: string,
     serviceDeskId?: string,
     requestTypeId?: string
-  ) {
-    try {
-      console.log('🔵 FRONTEND: Creating Jira issues with params:', {
-        state,
-        projectType,
-        tasks: tasks ? `Array(${tasks.length})` : 'undefined',
-        tasksType: typeof tasks,
+  ): Promise<any>;
+  async createJiraIssues(
+    optionsOrState: CreateJiraOptions | string,
+    projectType?: "software" | "jsm",
+    tasks?: JiraTask[],
+    projectKey?: string,
+    serviceDeskId?: string,
+    requestTypeId?: string
+  ): Promise<any> {
+    let finalOptions: CreateJiraOptions;
+
+    // Handle both object and individual parameter calls
+    if (typeof optionsOrState === 'object') {
+      finalOptions = optionsOrState;
+    } else {
+      finalOptions = {
+        state: optionsOrState,
+        projectType: projectType!,
+        tasks: tasks!,
         projectKey,
         serviceDeskId,
         requestTypeId
-      });
+      };
+    }
 
-      // ✅ Validate required parameters upfront
-      if (!state) {
-        throw new Error("State is required");
-      }
+    console.log('Creating Jira issues with options:', {
+      state: finalOptions.state,
+      projectType: finalOptions.projectType,
+      tasks: finalOptions.tasks ? `Array(${finalOptions.tasks.length})` : 'undefined/null',
+      tasksType: typeof finalOptions.tasks,
+      tasksIsArray: Array.isArray(finalOptions.tasks),
+      projectKey: finalOptions.projectKey,
+      serviceDeskId: finalOptions.serviceDeskId,
+      requestTypeId: finalOptions.requestTypeId
+    });
 
-      // More defensive validation for tasks
-      if (!tasks) {
-        throw new Error("Tasks parameter is required but was undefined");
-      }
-      
-      if (!Array.isArray(tasks)) {
-        throw new Error(`Tasks must be an array, got ${typeof tasks}`);
-      }
-      
-      if (tasks.length === 0) {
-        throw new Error("Tasks array cannot be empty");
-      }
+    // Comprehensive validation
+    if (!finalOptions.state || typeof finalOptions.state !== 'string') {
+      throw new Error("State parameter is required and must be a string");
+    }
 
-      if (projectType === "software" && !projectKey) {
+    if (!finalOptions.projectType || !['software', 'jsm'].includes(finalOptions.projectType)) {
+      throw new Error("Project type must be either 'software' or 'jsm'");
+    }
+
+    if (!finalOptions.tasks) {
+      throw new Error("Tasks parameter is required but was undefined or null");
+    }
+    
+    if (!Array.isArray(finalOptions.tasks)) {
+      throw new Error(`Tasks must be an array, received: ${typeof finalOptions.tasks}`);
+    }
+    
+    if (finalOptions.tasks.length === 0) {
+      throw new Error("Tasks array cannot be empty");
+    }
+
+    // Validate project-specific requirements
+    if (finalOptions.projectType === "software") {
+      if (!finalOptions.projectKey) {
         throw new Error("Project key is required for software projects");
       }
+    }
 
-      if (projectType === "jsm" && (!serviceDeskId || !requestTypeId)) {
+    if (finalOptions.projectType === "jsm") {
+      if (!finalOptions.serviceDeskId || !finalOptions.requestTypeId) {
         throw new Error("Service desk ID and request type ID are required for JSM projects");
       }
+    }
 
-      // ✅ Build payload with proper structure matching backend expectations
+    // Validate task structure
+    finalOptions.tasks.forEach((task, index) => {
+      if (!task || typeof task !== 'object') {
+        throw new Error(`Task at index ${index} is invalid: must be an object`);
+      }
+      if (!task.summary || typeof task.summary !== 'string') {
+        throw new Error(`Task at index ${index} missing required 'summary' field`);
+      }
+    });
+
+    try {
+      // Build request payload
       const payload: any = {
-        state,
-        project_type: projectType,
-        tasks
+        state: finalOptions.state,
+        project_type: finalOptions.projectType,
+        tasks: finalOptions.tasks
       };
 
-      if (projectType === "software") {
-        payload.project_key = projectKey;
+      if (finalOptions.projectType === "software") {
+        payload.project_key = finalOptions.projectKey;
       }
 
-      if (projectType === "jsm") {
-        payload.service_desk_id = serviceDeskId;
-        payload.request_type_id = requestTypeId;
+      if (finalOptions.projectType === "jsm") {
+        payload.service_desk_id = finalOptions.serviceDeskId;
+        payload.request_type_id = finalOptions.requestTypeId;
       }
 
-      console.log("🚀 FRONTEND: Sending payload to backend:", JSON.stringify(payload, null, 2));
+      console.log("Sending payload to backend:", JSON.stringify(payload, null, 2));
 
-      const res = await fetch(`${API_BASE_URL}/jira/create`, {
+      const response = await fetch(`${API_BASE_URL}/jira/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -592,50 +689,63 @@ class PdfAPI {
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let responseData;
+      const contentType = response.headers.get("content-type");
+      
+      if (contentType && contentType.includes("application/json")) {
+        responseData = await response.json();
+      } else {
+        responseData = { error: await response.text() };
+      }
 
-      if (!res.ok) {
-        console.error("❌ FRONTEND: Backend returned error:", {
-          status: res.status,
-          statusText: res.statusText,
-          data
+      if (!response.ok) {
+        console.error("Backend error response:", {
+          status: response.status,
+          statusText: response.statusText,
+          data: responseData
         });
 
-        // ✅ Better error message extraction
         let errorMessage = "Failed to create Jira issues";
         
-        if (data.detail) {
-          if (Array.isArray(data.detail)) {
-            // Pydantic validation errors
-            const errors = data.detail.map((err: any) => 
-              `${err.loc?.join('.')}: ${err.msg}`
-            ).join(', ');
-            errorMessage = `Validation error: ${errors}`;
-          } else if (typeof data.detail === 'string') {
-            errorMessage = data.detail;
+        if (responseData.detail) {
+          if (Array.isArray(responseData.detail)) {
+            const errors = responseData.detail.map((err: any) => {
+              if (err.loc && err.msg) {
+                return `${err.loc.join('.')}: ${err.msg}`;
+              }
+              return JSON.stringify(err);
+            }).join(', ');
+            errorMessage = `Validation errors: ${errors}`;
+          } else if (typeof responseData.detail === 'string') {
+            errorMessage = responseData.detail;
           } else {
-            errorMessage = JSON.stringify(data.detail);
+            errorMessage = JSON.stringify(responseData.detail);
           }
+        } else if (responseData.error) {
+          errorMessage = responseData.error;
         }
 
         throw new Error(errorMessage);
       }
 
-      console.log("✅ FRONTEND: Issues created successfully:", data);
-      return data;
+      console.log("Issues created successfully:", responseData);
+      return responseData;
       
-    } catch (err) {
-      console.error("❌ FRONTEND: Error creating Jira issues:", err);
-      throw err;
+    } catch (error) {
+      console.error("Error creating Jira issues:", error);
+      throw error;
     }
   }
 
   // Parse Word document to tasks
   async parseWordToTasks(file: File, state?: string) {
+    if (!file) {
+      throw new Error("File parameter is required");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     
-    // ✅ Include state if provided
     if (state) {
       formData.append("state", state);
     }
@@ -655,28 +765,44 @@ class PdfAPI {
 
   // Get tasks by state
   async getTasks(state: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const response = await this.request(`${API_BASE_URL}/tasks/${state}`);
+    
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Failed to fetch tasks: ${response.statusText} - ${errorText}`);
     }
+    
     return response.json();
   }
 
   // Clear session
   async clearSession(state: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const response = await this.request(`${API_BASE_URL}/session/${state}`, {
       method: "DELETE",
     });
+    
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to clear session: ${response.statusText} - ${errorText}`);
+      console.warn(`Failed to clear session: ${response.statusText} - ${errorText}`);
     }
-    return response.json();
+    
+    return response.ok ? await response.json() : { message: "Session cleared" };
   }
 
   // Jira to Word conversion
   async jiraToWord(state: string, projectKey?: string, jql?: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const formData = new FormData();
     formData.append("state", state);
     
@@ -703,6 +829,10 @@ class PdfAPI {
 
   // PDF to Notion conversion
   async pdfToNotion(file: File) {
+    if (!file) {
+      throw new Error("File parameter is required");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -732,8 +862,12 @@ class PdfAPI {
     }
   }
 
-  // ✅ NEW: Get login URL for popup-based authentication
+  // Get login URL for popup-based authentication
   async getLoginUrl(state: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const response = await this.request(`${API_BASE_URL}/auth/login-url?state=${state}`);
     
     if (!response.ok) {
@@ -743,15 +877,24 @@ class PdfAPI {
     return response.json();
   }
 
-  // ✅ NEW: Get user profile information
+  // Get user profile information
   async getUserProfile(state: string) {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
     const response = await this.request(`${API_BASE_URL}/user/profile?state=${state}`);
     
     if (!response.ok) {
-      throw new Error(`Failed to get user profile: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to get user profile: ${response.statusText} - ${errorText}`);
     }
     
     return response.json();
+  }
+}
+
+export const pdfApi = new PdfAPI();
   }
 }
 
