@@ -37,9 +37,9 @@ const Index = () => {
           <div className="space-y-8 animate-fade-up">
             <div className="space-y-4">
               <h1 className="text-5xl md:text-8xl font-heading font-bold gradient-text leading-none tracking-tight">
-                FREE FUTURE OF
+                REVOLUTIONARY FREE
                 <br />
-                <span className="text-glow">PDF TOOLS</span>
+                <span className="text-glow">AI-POWERED PDF SUITE</span>
               </h1>
               <div className="flex justify-center">
                 <div className="h-1 w-32 bg-gradient-to-r from-primary via-accent to-primary rounded-full glow-primary"></div>
@@ -73,7 +73,7 @@ const Index = () => {
             <div className="inline-flex items-center gap-3 mb-6">
               <div className="h-px w-16 bg-gradient-to-r from-transparent to-primary"></div>
               <span className="text-sm font-mono tracking-wider text-primary uppercase">
-                COMPREHENSIVE SUITE
+                ULTIMATE FREE TOOLKIT
               </span>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-primary"></div>
             </div>
