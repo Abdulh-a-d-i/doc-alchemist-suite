@@ -716,7 +716,37 @@ class PdfAPI {
 
     return response.json();
   }
+  async getJiraLoginUrl(state: string) {
+    const response = await fetch(`/api/auth/login-url?state=${state}`);
+    if (!response.ok) throw new Error('Failed to get login URL');
+    return response.json();
+  },
 
+  async checkJiraStatus(state: string) {
+    const response = await fetch(`/api/jira/status?state=${state}`);
+    if (!response.ok) throw new Error('Failed to check status');
+    return response.json();
+  },
+
+  // Make sure jiraToWord method exists:
+  async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
+    const formData = new FormData();
+    formData.append('state', state);
+    if (projectKey) formData.append('project_key', projectKey);
+    if (jql) formData.append('jql', jql);
+
+    const response = await fetch('/api/convert/jira-to-word', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Export failed: ${errorText}`);
+    }
+
+    return response.blob();
+  }
   // HTML to PDF conversion
   async htmlToPdf(htmlContent?: string, url?: string): Promise<Blob> {
     if (url) {
