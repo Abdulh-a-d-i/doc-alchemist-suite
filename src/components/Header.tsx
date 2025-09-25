@@ -39,7 +39,7 @@ export const Header = () => {
             </div>
             <div>
               <h1 className="text-2xl font-heading font-bold gradient-text">
-                PDFTools
+                FREE PDFTools
               </h1>
               <p className="text-xs text-muted-foreground font-mono tracking-wider">
                 AI-POWERED SUITE

@@ -19,6 +19,13 @@ interface Task {
   assignee: string;
 }
 
+interface JiraTask {
+  summary: string;
+  description: string;
+  priority: string;
+  assignee: string;
+}
+
 interface WordToJiraFlowProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -52,7 +59,11 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
     setIsProcessing(true);
     try {
       const result = await pdfApi.parseWordToTasks(files[0]);
-      setTasks(result.tasks || []);
+      const tasksWithIds = (result.tasks || []).map((task: JiraTask, index: number) => ({
+        ...task,
+        id: `task-${index + 1}`
+      }));
+      setTasks(tasksWithIds);
       setStep('parse');
       toast({
         title: "Success",

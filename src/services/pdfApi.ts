@@ -471,12 +471,12 @@ class PdfAPI {
       throw new Error("Failed to open popup window. Please allow popups.");
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
           window.removeEventListener("message", messageHandler);
-          this.checkJiraStatus(state).then(resolve).catch(reject);
+          this.checkJiraStatus(state).then(() => resolve()).catch(reject);
         }
       }, 1000);
 
@@ -505,17 +505,13 @@ class PdfAPI {
   }
 
   // Check Jira authentication status
-  async checkJiraStatus(state: string): Promise<void> {
+  async checkJiraStatus(state: string): Promise<{ authenticated: boolean }> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
     const response = await this.request(`${API_BASE_URL}/jira/status?state=${state}`);
-    const data = await response.json();
-
-    if (!data.authenticated) {
-      throw new Error("Jira authentication failed");
-    }
+    return response.json();
   }
 
   // Get Jira projects
@@ -716,37 +712,31 @@ class PdfAPI {
 
     return response.json();
   }
-  async getJiraLoginUrl(state: string) {
-    const response = await fetch(`/api/auth/login-url?state=${state}`);
-    if (!response.ok) throw new Error('Failed to get login URL');
-    return response.json();
-  }
-
-  async checkJiraStatus(state: string) {
-    const response = await fetch(`/api/jira/status?state=${state}`);
-    if (!response.ok) throw new Error('Failed to check status');
-    return response.json();
-  }
-
-  // Make sure jiraToWord method exists:
-  async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
+  // Add split functionality
+  async split(file: File, pageRanges: string): Promise<Blob[]> {
     const formData = new FormData();
-    formData.append('state', state);
-    if (projectKey) formData.append('project_key', projectKey);
-    if (jql) formData.append('jql', jql);
+    formData.append("file", file);
+    formData.append("page_ranges", pageRanges);
 
-    const response = await fetch('/api/convert/jira-to-word', {
-      method: 'POST',
+    const response = await this.request(`${API_BASE_URL}/split`, {
+      method: "POST",
       body: formData,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Export failed: ${errorText}`);
+    const blob = await response.blob();
+    return [blob]; // Return as array for consistency
+  }
+
+  // Get Jira login URL
+  async getJiraLoginUrl(state: string): Promise<{ auth_url: string }> {
+    if (!state) {
+      throw new Error("State parameter is required");
     }
 
-    return response.blob();
+    const response = await this.request(`${API_BASE_URL}/login/jira?state=${state}`);
+    return response.json();
   }
+
   // HTML to PDF conversion
   async htmlToPdf(htmlContent?: string, url?: string): Promise<Blob> {
     if (url) {

@@ -37,7 +37,7 @@ const Index = () => {
           <div className="space-y-8 animate-fade-up">
             <div className="space-y-4">
               <h1 className="text-5xl md:text-8xl font-heading font-bold gradient-text leading-none tracking-tight">
-                FUTURE OF
+                FREE FUTURE OF
                 <br />
                 <span className="text-glow">PDF TOOLS</span>
               </h1>
@@ -47,10 +47,10 @@ const Index = () => {
             </div>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light">
-              Experience next-generation PDF processing with{" "}
+              Experience next-generation FREE PDF processing with{" "}
               <span className="text-primary font-medium">AI-powered intelligence</span>. 
-              Convert, compress, merge, and transform your documents with{" "}
-              <span className="text-accent font-medium">unprecedented speed</span>.
+              FREE converters to compress, merge, and transform your documents with{" "}
+              <span className="text-accent font-medium">unprecedented speed</span> - all completely FREE.
             </p>
             
             {/* Enhanced Search Bar */}
@@ -60,17 +60,6 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Button size="lg" className="text-lg px-10 py-5 bg-gradient-to-r from-primary to-accent hover:from-primary-hover hover:to-accent/80 border-primary/30 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/30 transition-all duration-500 group relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-shimmer animate-shimmer opacity-0 group-hover:opacity-100"></div>
-                <Rocket className="h-6 w-6 mr-3 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="relative z-10 font-semibold">Start Processing</span>
-              </Button>
-              <Button variant="outline" size="lg" className="text-lg px-10 py-5 glass-card hover-glow border-primary/20 hover:border-primary/40 group">
-                <Sparkles className="h-6 w-6 mr-3 group-hover:animate-pulse" />
-                <span className="font-medium">Explore Tools</span>
-              </Button>
-            </div>
           </div>
         </div>
       </section>
@@ -90,12 +79,12 @@ const Index = () => {
             </div>
             
             <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6 gradient-text">
-              All PDF Tools in One Place
+              All FREE PDF Tools in One Place
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               Choose from our comprehensive collection of{" "}
-              <span className="text-primary font-medium">AI-powered PDF tools</span>. 
-              Each tool is designed for maximum speed, security, and ease of use.
+              <span className="text-primary font-medium">FREE AI-powered PDF tools</span>. 
+              Each FREE converter is designed for maximum speed, security, and ease of use.
             </p>
           </div>
           
@@ -110,10 +99,10 @@ const Index = () => {
         <div className="container mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Why Choose Our Platform?
+              Why Choose Our FREE Platform?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Built with cutting-edge technology for the modern workflow
+              Built with cutting-edge technology for modern workflow - completely FREE
             </p>
           </div>
           
@@ -130,11 +119,11 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Zap className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Lightning Fast</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Lightning Fast & FREE</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  AI-optimized processing engines deliver results in{" "}
+                  FREE AI-optimized processing engines deliver results in{" "}
                   <span className="text-yellow-400 font-medium">milliseconds</span>. 
-                  Experience the future of document processing speed.
+                  Experience the future of FREE document processing speed.
                 </p>
               </CardContent>
             </Card>
@@ -150,10 +139,10 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Shield className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Military-Grade Security</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Military-Grade Security & FREE</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  <span className="text-green-400 font-medium">End-to-end encryption</span> with automatic file deletion. 
-                  Your documents are processed securely and never stored.
+                  <span className="text-green-400 font-medium">FREE End-to-end encryption</span> with automatic file deletion. 
+                  Your documents are processed securely and never stored - all FREE.
                 </p>
               </CardContent>
             </Card>
@@ -169,11 +158,11 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Users className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Intuitive Design</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Intuitive Design & FREE</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  Streamlined interface powered by{" "}
+                  FREE streamlined interface powered by{" "}
                   <span className="text-purple-400 font-medium">user research</span>. 
-                  Complex operations made simple with smart automation.
+                  Complex operations made simple with FREE smart automation.
                 </p>
               </CardContent>
             </Card>
