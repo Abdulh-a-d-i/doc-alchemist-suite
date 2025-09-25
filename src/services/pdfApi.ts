@@ -720,13 +720,13 @@ class PdfAPI {
     const response = await fetch(`/api/auth/login-url?state=${state}`);
     if (!response.ok) throw new Error('Failed to get login URL');
     return response.json();
-  },
+  }
 
   async checkJiraStatus(state: string) {
     const response = await fetch(`/api/jira/status?state=${state}`);
     if (!response.ok) throw new Error('Failed to check status');
     return response.json();
-  },
+  }
 
   // Make sure jiraToWord method exists:
   async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
