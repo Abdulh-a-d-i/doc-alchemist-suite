@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,54 @@ export const JiraToWordFlow = ({ open, onOpenChange }: JiraToWordFlowProps) => {
   const [step, setStep] = useState<'auth' | 'configure' | 'export'>('auth');
   const { toast } = useToast();
 
+  // Check authentication status when component mounts or state changes
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await pdfApi.checkJiraStatus(state);
+        if (response.authenticated) {
+          setIsAuthenticated(true);
+          const projectsData = await pdfApi.getJiraProjects(state);
+          setProjects(projectsData);
+          setStep('configure');
+        }
+      } catch (error) {
+        console.log('Not authenticated yet');
+      }
+    };
+
+    if (open) {
+      checkAuthStatus();
+    }
+  }, [open, state]);
+
+  // Listen for authentication messages from popup
+  useEffect(() => {
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.data?.type === 'jira_auth_success' && event.data.state === state) {
+        try {
+          setIsAuthenticated(true);
+          const projectsData = await pdfApi.getJiraProjects(state);
+          setProjects(projectsData);
+          setStep('configure');
+          toast({
+            title: "Success",
+            description: "Jira authentication successful",
+          });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to load projects after authentication",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [state, toast]);
+
   const downloadFile = (blob: Blob, filename: string) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -39,19 +87,22 @@ export const JiraToWordFlow = ({ open, onOpenChange }: JiraToWordFlowProps) => {
   const handleJiraAuth = async () => {
     setIsProcessing(true);
     try {
-      await pdfApi.loginJira(state);
-      setIsAuthenticated(true);
-      const projectsData = await pdfApi.getJiraProjects(state);
-      setProjects(projectsData);
-      setStep('configure');
-      toast({
-        title: "Success",
-        description: "Jira authentication successful",
-      });
+      const response = await pdfApi.getJiraLoginUrl(state);
+      const popup = window.open(
+        response.auth_url,
+        'jira_auth',
+        'width=600,height=700,scrollbars=yes,resizable=yes'
+      );
+
+      if (!popup) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+
+      // Popup will send message when auth completes
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Jira authentication failed",
+        description: error instanceof Error ? error.message : "Authentication failed",
         variant: "destructive",
       });
     } finally {
@@ -163,8 +214,8 @@ export const JiraToWordFlow = ({ open, onOpenChange }: JiraToWordFlowProps) => {
                         </SelectTrigger>
                         <SelectContent>
                           {projects.jsm.map((desk: any) => (
-                            <SelectItem key={desk.projectKey} value={desk.projectKey}>
-                              {desk.name} ({desk.projectKey})
+                            <SelectItem key={desk.key} value={desk.key}>
+                              {desk.name} ({desk.key})
                             </SelectItem>
                           ))}
                         </SelectContent>
