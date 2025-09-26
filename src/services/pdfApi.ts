@@ -377,16 +377,7 @@ class PdfAPI {
     return response;
   }
 
-  // Convert files using the /convert endpoint
-  // Convert files using the /convert endpoint
-async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
-  if (!file) {
-    throw new Error("File is required");
-  }
-  if (!target) {
-    throw new Error("Target format is required");
-  }
-
+async convert(file: File, target: string): Promise<Blob & { fileName: string }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("target", target);
@@ -397,20 +388,17 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
   });
 
   const blob = await response.blob();
-
-  // 🔑 Smart filename handling
   const originalName = file.name.split(".")[0];
-  let fileName: string;
 
-  if (target === "jpg" && file.name.toLowerCase().endsWith(".pdf")) {
-    fileName = `${originalName}.zip`; // backend returns a zip
-  } else {
-    fileName = `${originalName}.${target === "pdfa" ? "pdf" : target}`;
-  }
+  const fileName =
+    target === "jpg" && file.name.toLowerCase().endsWith(".pdf")
+      ? `${originalName}.zip`
+      : `${originalName}.${target === "pdfa" ? "pdf" : target}`;
 
-  return { blob, fileName };
+  // attach filename to blob object
+  (blob as any).fileName = fileName;
+  return blob as Blob & { fileName: string };
 }
-
 
   // Convert URL to PDF
   async convertUrl(url: string, target: string): Promise<Blob> {
