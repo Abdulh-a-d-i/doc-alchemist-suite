@@ -28,57 +28,6 @@ interface Tool {
 
 const tools: Tool[] = [
   {
-    id: 'pdf-to-word',
-    title: 'PDF to Word',
-    description: 'Convert PDF files to editable Word documents with AI precision',
-    icon: FileTextIcon,
-    color: 'bg-gradient-to-r from-blue-500 to-blue-600',
-    type: 'convert'
-  },
-  {
-    id: 'word-to-pdf',
-    title: 'Word to PDF',
-    description: 'Transform Word documents to professional PDF format',
-    icon: FileText,
-    color: 'bg-gradient-to-r from-red-500 to-red-600',
-    type: 'convert'
-  },
-  {
-    id: 'compress-pdf',
-    title: 'Compress PDF',
-    description: 'Reduce PDF file size while maintaining crystal-clear quality',
-    icon: Archive,
-    color: 'bg-gradient-to-r from-green-500 to-green-600',
-    type: 'compress',
-    route: '/compress'
-  },
-  {
-    id: 'merge-pdf',
-    title: 'Merge PDF',
-    description: 'Seamlessly combine multiple PDF files into one document',
-    icon: GitMerge,
-    color: 'bg-gradient-to-r from-purple-500 to-purple-600',
-    type: 'merge',
-    route: '/merge'
-  },
-  {
-    id: 'split-pdf',
-    title: 'Split PDF',
-    description: 'Extract and separate specific pages with precision',
-    icon: Scissors,
-    color: 'bg-gradient-to-r from-orange-500 to-orange-600',
-    type: 'split',
-    route: '/split'
-  },
-  {
-    id: 'html-to-pdf',
-    title: 'HTML to PDF',
-    description: 'Convert web pages and HTML content to professional PDFs',
-    icon: Globe,
-    color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
-    type: 'html-to-pdf'
-  },
-  {
     id: 'jira-to-word',
     title: 'Jira to Word',
     description: 'Export Jira tickets and content to Word documents',
@@ -141,6 +90,57 @@ const tools: Tool[] = [
     icon: BookOpen,
     color: 'bg-gradient-to-r from-slate-500 to-slate-600',
     type: 'notion-to-pdf'
+  },
+  {
+    id: 'pdf-to-word',
+    title: 'PDF to Word',
+    description: 'Convert PDF files to editable Word documents with precision',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    type: 'convert'
+  },
+  {
+    id: 'word-to-pdf',
+    title: 'Word to PDF',
+    description: 'Transform Word documents to professional PDF format',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-red-500 to-red-600',
+    type: 'convert'
+  },
+  {
+    id: 'compress-pdf',
+    title: 'Compress PDF',
+    description: 'Reduce PDF file size while maintaining crystal-clear quality',
+    icon: Archive,
+    color: 'bg-gradient-to-r from-green-500 to-green-600',
+    type: 'compress',
+    route: '/compress'
+  },
+  {
+    id: 'merge-pdf',
+    title: 'Merge PDF',
+    description: 'Seamlessly combine multiple PDF files into one document',
+    icon: GitMerge,
+    color: 'bg-gradient-to-r from-purple-500 to-purple-600',
+    type: 'merge',
+    route: '/merge'
+  },
+  {
+    id: 'split-pdf',
+    title: 'Split PDF',
+    description: 'Extract and separate specific pages with precision',
+    icon: Scissors,
+    color: 'bg-gradient-to-r from-orange-500 to-orange-600',
+    type: 'split',
+    route: '/split'
+  },
+  {
+    id: 'html-to-pdf',
+    title: 'HTML to PDF',
+    description: 'Convert web pages and HTML content to professional PDFs',
+    icon: Globe,
+    color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
+    type: 'html-to-pdf'
   }
 ];
 
