@@ -33,20 +33,22 @@ export const FileUpload = ({
     onFilesSelected(newFiles);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: acceptedTypes.reduce((acc, type) => {
       acc[type] = [];
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
+    noClick: true, // disables click on card, we handle manually
+    noKeyboard: true,
   });
 
   return (
     <div className="space-y-4">
       <Card 
         {...getRootProps()} 
-        className={`border-2 border-dashed p-8 text-center cursor-pointer transition-colors ${
+        className={`border-2 border-dashed p-8 text-center transition-colors ${
           isDragActive 
             ? 'border-primary bg-accent' 
             : 'border-muted-foreground/25 hover:border-primary/50'
@@ -56,7 +58,7 @@ export const FileUpload = ({
         <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h3 className="text-lg font-medium mb-2">{title}</h3>
         <p className="text-muted-foreground mb-4">{description}</p>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" onClick={open}>
           Choose Files
         </Button>
       </Card>
