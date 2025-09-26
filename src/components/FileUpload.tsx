@@ -40,8 +40,8 @@ export const FileUpload = ({
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
-    noClick: true, // disables click on card, we handle manually
-    noKeyboard: true,
+    noClick: true,      // disable auto-click
+    noKeyboard: true,   // disable keyboard click
   });
 
   return (
