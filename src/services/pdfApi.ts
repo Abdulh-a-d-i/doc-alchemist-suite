@@ -387,22 +387,20 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
     body: formData,
   });
 
-  const blob = await response.blob();
+  // ✅ Ensure we actually get a blob
+  const blob: Blob = await response.blob();
 
-  // Try to get filename from Content-Disposition header
-  const disposition = response.headers.get("Content-Disposition");
+  // ✅ Extract filename
   let fileName: string | null = null;
-
+  const disposition = response.headers.get("Content-Disposition");
   if (disposition && disposition.includes("filename=")) {
     fileName = disposition.split("filename=")[1].replace(/['"]/g, "");
   }
 
-  // If backend didn’t send filename, fallback manually
   if (!fileName) {
     const originalName = file.name.split(".")[0];
-
     if (target === "jpg" && file.name.toLowerCase().endsWith(".pdf")) {
-      fileName = `${originalName}.zip`; // ✅ multi-page PDF→JPG must be ZIP
+      fileName = `${originalName}.zip`; // ✅ enforce .zip for multi-page PDF → JPG
     } else {
       fileName = `${originalName}.${target === "pdfa" ? "pdf" : target}`;
     }
@@ -410,6 +408,7 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
 
   return { blob, fileName };
 }
+
 
 
   // Convert URL to PDF
