@@ -62,16 +62,16 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
             });
             return;
           }
-          
-          // Determine target format from tool id
+        
           let target = '';
           if (tool.id === 'pdf-to-word') target = 'docx';
           else if (tool.id === 'word-to-pdf') target = 'pdf';
           else if (tool.id === 'pdf-to-jpg') target = 'jpg';
           else if (tool.id === 'jpg-to-pdf') target = 'pdf';
-          
-          result = await pdfApi.convert(files[0], target);
-          downloadFile(result, `converted_${files[0].name.split('.')[0]}.${target}`);
+        
+          const { blob, fileName } = await pdfApi.convert(files[0], target);
+        
+          downloadFile(blob, fileName); // ✅ now passing a real Blob + filename
           break;
           
         case 'compress':
