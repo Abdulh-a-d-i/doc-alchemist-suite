@@ -156,9 +156,9 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto border-primary/30 bg-background/98 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle>Word to Jira - Create Issues</DialogTitle>
+          <DialogTitle className="text-foreground font-semibold">Word to Jira - Create Issues</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -194,36 +194,38 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
               </div>
               <div className="grid gap-4 max-h-96 overflow-y-auto">
                 {tasks.map((task, index) => (
-                  <Card key={index} className="border">
+                  <Card key={index} className="border border-primary/20 bg-card/80 backdrop-blur-sm hover:border-primary/40 transition-colors">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="text-sm flex items-center gap-2 text-foreground font-semibold">
                         <Edit2 className="h-4 w-4" />
                         Task {index + 1}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       <div>
-                        <Label htmlFor={`summary-${index}`}>Summary</Label>
+                        <Label htmlFor={`summary-${index}`} className="text-foreground font-medium">Summary</Label>
                         <Input
                           id={`summary-${index}`}
                           value={task.summary}
                           onChange={(e) => updateTask(index, 'summary', e.target.value)}
+                          className="bg-background/50 border-border/50 focus:border-primary text-foreground"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`description-${index}`}>Description</Label>
+                        <Label htmlFor={`description-${index}`} className="text-foreground font-medium">Description</Label>
                         <Textarea
                           id={`description-${index}`}
                           value={task.description}
                           onChange={(e) => updateTask(index, 'description', e.target.value)}
                           rows={3}
+                          className="bg-background/50 border-border/50 focus:border-primary text-foreground resize-none"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <Label htmlFor={`priority-${index}`}>Priority</Label>
+                          <Label htmlFor={`priority-${index}`} className="text-foreground font-medium">Priority</Label>
                           <Select value={task.priority} onValueChange={(value) => updateTask(index, 'priority', value)}>
-                            <SelectTrigger>
+                            <SelectTrigger className="bg-background/50 border-border/50 focus:border-primary text-foreground">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -236,12 +238,13 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor={`assignee-${index}`}>Assignee</Label>
+                          <Label htmlFor={`assignee-${index}`} className="text-foreground font-medium">Assignee</Label>
                           <Input
                             id={`assignee-${index}`}
                             value={task.assignee}
                             onChange={(e) => updateTask(index, 'assignee', e.target.value)}
                             placeholder="username"
+                            className="bg-background/50 border-border/50 focus:border-primary text-foreground"
                           />
                         </div>
                       </div>

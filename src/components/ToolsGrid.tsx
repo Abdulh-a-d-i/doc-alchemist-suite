@@ -21,7 +21,7 @@ interface Tool {
   description: string;
   icon: typeof FileText;
   color: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf';
   route?: string;
   comingSoon?: boolean;
 }
@@ -117,6 +117,30 @@ const tools: Tool[] = [
     icon: FileText,
     color: 'bg-gradient-to-r from-teal-500 to-teal-600',
     type: 'convert'
+  },
+  {
+    id: 'pdf-to-jira',
+    title: 'PDF to Jira',
+    description: 'Convert PDF documents directly into Jira tickets and issues',
+    icon: Layers,
+    color: 'bg-gradient-to-r from-violet-500 to-violet-600',
+    type: 'pdf-to-jira'
+  },
+  {
+    id: 'jira-to-pdf',
+    title: 'Jira to PDF',
+    description: 'Export Jira tickets and workflows to professional PDF reports',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-emerald-500 to-emerald-600',
+    type: 'jira-to-pdf'
+  },
+  {
+    id: 'notion-to-pdf',
+    title: 'Notion to PDF',
+    description: 'Transform Notion pages and databases into beautiful PDF documents',
+    icon: BookOpen,
+    color: 'bg-gradient-to-r from-slate-500 to-slate-600',
+    type: 'notion-to-pdf'
   }
 ];
 

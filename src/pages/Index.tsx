@@ -39,7 +39,7 @@ const Index = () => {
               <h1 className="text-5xl md:text-8xl font-heading font-bold gradient-text leading-none tracking-tight">
                 REVOLUTIONARY FREE
                 <br />
-                <span className="text-glow">AI-POWERED PDF SUITE</span>
+                <span className="text-glow">PDF SUITE</span>
               </h1>
               <div className="flex justify-center">
                 <div className="h-1 w-32 bg-gradient-to-r from-primary via-accent to-primary rounded-full glow-primary"></div>
@@ -48,9 +48,11 @@ const Index = () => {
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light">
               Experience next-generation FREE PDF processing with{" "}
-              <span className="text-primary font-medium">AI-powered intelligence</span>. 
+              <span className="text-primary font-medium">intelligent processing</span>. 
               FREE converters to compress, merge, and transform your documents with{" "}
               <span className="text-accent font-medium">unprecedented speed</span> - all completely FREE.
+              <br />
+              <span className="font-semibold text-primary">FREE Word to Jira</span> and <span className="font-semibold text-primary">FREE Jira to Word</span> conversions available.
             </p>
             
             {/* Enhanced Search Bar */}

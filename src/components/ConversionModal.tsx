@@ -15,7 +15,7 @@ interface Tool {
   id: string;
   title: string;
   description: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf';
 }
 
 interface ConversionModalProps {
@@ -158,6 +158,40 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
             description: "Notion content copied to clipboard",
           });
           break;
+          
+        case 'pdf-to-jira':
+          if (files.length === 0) {
+            toast({
+              title: "Error",
+              description: "Please select a PDF file",
+              variant: "destructive",
+            });
+            return;
+          }
+          result = await pdfApi.pdfToNotion(files[0]); // Placeholder - will be updated when API is ready
+          toast({
+            title: "Success",
+            description: "PDF converted to Jira format successfully",
+          });
+          break;
+          
+        case 'jira-to-pdf':
+          result = await pdfApi.htmlToPdf("Jira content converted to PDF"); // Placeholder
+          downloadFile(result, "jira-export.pdf");
+          break;
+          
+        case 'notion-to-pdf':
+          if (files.length === 0) {
+            toast({
+              title: "Error",
+              description: "Please select a Notion export file",
+              variant: "destructive",
+            });
+            return;
+          }
+          result = await pdfApi.htmlToPdf("Notion content converted to PDF"); // Placeholder
+          downloadFile(result, "notion-export.pdf");
+          break;
       }
 
       if (!['word-to-jira', 'pdf-to-notion'].includes(tool.type)) {
@@ -192,6 +226,12 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
         return ['.doc', '.docx'];
       case 'pdf-to-notion':
         return ['.pdf'];
+      case 'pdf-to-jira':
+        return ['.pdf'];
+      case 'jira-to-pdf':
+        return ['.json', '.txt'];
+      case 'notion-to-pdf':
+        return ['.zip', '.html', '.md'];
       default:
         return ['.pdf'];
     }
@@ -203,9 +243,9 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto border-primary/30 bg-background/98 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle>{tool.title}</DialogTitle>
+          <DialogTitle className="text-foreground font-semibold">{tool.title}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">

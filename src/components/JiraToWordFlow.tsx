@@ -149,9 +149,9 @@ export const JiraToWordFlow = ({ open, onOpenChange }: JiraToWordFlowProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto border-primary/30 bg-background/98 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle>Jira to Word - Export Issues</DialogTitle>
+          <DialogTitle className="text-foreground font-semibold">Jira to Word - Export Issues</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
