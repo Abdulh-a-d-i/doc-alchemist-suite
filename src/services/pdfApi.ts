@@ -377,7 +377,7 @@ class PdfAPI {
     return response;
   }
 
-async convert(file: File, target: string): Promise<Blob & { fileName: string }> {
+async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("target", target);
@@ -388,17 +388,29 @@ async convert(file: File, target: string): Promise<Blob & { fileName: string }> 
   });
 
   const blob = await response.blob();
-  const originalName = file.name.split(".")[0];
 
-  const fileName =
-    target === "jpg" && file.name.toLowerCase().endsWith(".pdf")
-      ? `${originalName}.zip`
-      : `${originalName}.${target === "pdfa" ? "pdf" : target}`;
+  // Try to get filename from Content-Disposition header
+  const disposition = response.headers.get("Content-Disposition");
+  let fileName: string | null = null;
 
-  // attach filename to blob object
-  (blob as any).fileName = fileName;
-  return blob as Blob & { fileName: string };
+  if (disposition && disposition.includes("filename=")) {
+    fileName = disposition.split("filename=")[1].replace(/['"]/g, "");
+  }
+
+  // If backend didn’t send filename, fallback manually
+  if (!fileName) {
+    const originalName = file.name.split(".")[0];
+
+    if (target === "jpg" && file.name.toLowerCase().endsWith(".pdf")) {
+      fileName = `${originalName}.zip`; // ✅ multi-page PDF→JPG must be ZIP
+    } else {
+      fileName = `${originalName}.${target === "pdfa" ? "pdf" : target}`;
+    }
+  }
+
+  return { blob, fileName };
 }
+
 
   // Convert URL to PDF
   async convertUrl(url: string, target: string): Promise<Blob> {
