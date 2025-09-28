@@ -1,5 +1,4 @@
-import { useRef } from "react";
-import { Upload, File as FileIcon, X } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -18,16 +17,11 @@ export function FileUpload({
   title = "Select files",
   description = "Drag and drop your files here or click the button below",
 }: FileUploadProps) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const handleClick = () => {
-    inputRef.current?.click();
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files).slice(0, maxFiles);
     onFilesSelected(files);
+    e.target.value = ''; // Reset input to allow re-selecting the same file if needed
   };
 
   return (
@@ -37,7 +31,7 @@ export function FileUpload({
       <p className="text-muted-foreground mb-4">{description}</p>
 
       <input
-        ref={inputRef}
+        id="file-upload"
         type="file"
         accept={acceptedTypes.join(",")}
         multiple={maxFiles > 1}
@@ -45,9 +39,11 @@ export function FileUpload({
         className="hidden"
       />
 
-      <Button type="button" onClick={handleClick} className="mt-4">
-        Choose Files
-      </Button>
+      <label htmlFor="file-upload">
+        <Button type="button" asChild className="mt-4 cursor-pointer">
+          <span>Choose Files</span>
+        </Button>
+      </label>
     </Card>
   );
 }
