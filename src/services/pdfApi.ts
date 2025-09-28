@@ -334,151 +334,41 @@
 
 // PDF conversion and processing API service with backend integration
 
+// Updated src/services/pdfApi.js with Notion support
+
 const API_BASE_URL =
   import.meta.env.VITE_BACKEND_URL || "https://full-shrimp-deeply.ngrok-free.app";
 
-interface JiraTask {
+interface NotionTask {
   summary: string;
   description?: string;
   priority?: string;
   assignee?: string;
   labels?: string[];
+  type?: string;
   [key: string]: any;
 }
 
-interface JiraOptions {
+interface NotionOptions {
   state: string;
-  projectType: "software" | "jsm";
-  tasks: JiraTask[];
-  projectKey?: string;
-  serviceDeskId?: string;
-  requestTypeId?: string;
+  tasks: NotionTask[];
+  databaseId?: string;
+  parentPageId?: string;
+  createNewDatabase?: boolean;
+  databaseTitle?: string;
 }
 
 class PdfAPI {
-  private sessionId: string | null = null;
+  // ... (keep all existing methods)
 
-  // Central helper to inject headers into every fetch
-  private async request(url: string, options: RequestInit = {}): Promise<Response> {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...(options.headers || {}),
-        "ngrok-skip-browser-warning": "true",
-        "Accept": "application/json, text/plain, */*",
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`${response.statusText} - ${errorText}`);
-    }
-
-    return response;
-  }
-
-async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("target", target);
-
-  const response = await this.request(`${API_BASE_URL}/convert`, {
-    method: "POST",
-    body: formData,
-  });
-
-  // ✅ Ensure we actually get a blob
-  const blob: Blob = await response.blob();
-
-  // ✅ Extract filename
-  let fileName: string | null = null;
-  const disposition = response.headers.get("Content-Disposition");
-  if (disposition && disposition.includes("filename=")) {
-    fileName = disposition.split("filename=")[1].replace(/['"]/g, "");
-  }
-
-  if (!fileName) {
-    const originalName = file.name.split(".")[0];
-    if (target === "jpg" && file.name.toLowerCase().endsWith(".pdf")) {
-      fileName = `${originalName}.zip`; // ✅ enforce .zip for multi-page PDF → JPG
-    } else {
-      fileName = `${originalName}.${target === "pdfa" ? "pdf" : target}`;
-    }
-  }
-
-  return { blob, fileName };
-}
-
-
-
-  // Convert URL to PDF
-  async convertUrl(url: string, target: string): Promise<Blob> {
-    if (!url) {
-      throw new Error("URL is required");
-    }
-    if (!target) {
-      throw new Error("Target format is required");
-    }
-
-    const formData = new FormData();
-    formData.append("url", url);
-    formData.append("target", target);
-
-    const response = await this.request(`${API_BASE_URL}/convert-url`, {
-      method: "POST",
-      body: formData,
-    });
-
-    return response.blob();
-  }
-
-  // Compress PDF files
-  async compress(file: File, level: string = "medium"): Promise<Blob> {
-    if (!file) {
-      throw new Error("File is required");
-    }
-
-    const formData = new FormData();
-    formData.append("compress_type", "pdf");
-    formData.append("file", file);
-    formData.append("level", level);
-
-    const response = await this.request(`${API_BASE_URL}/compress`, {
-      method: "POST",
-      body: formData,
-    });
-
-    return response.blob();
-  }
-
-  // Merge multiple PDF files
-  async merge(files: File[]): Promise<Blob> {
-    if (!files || files.length === 0) {
-      throw new Error("At least one file is required");
-    }
-
-    const formData = new FormData();
-    formData.append("merge_type", "pdf");
-    files.forEach((file) => {
-      formData.append("files", file);
-    });
-
-    const response = await this.request(`${API_BASE_URL}/merge`, {
-      method: "POST",
-      body: formData,
-    });
-
-    return response.blob();
-  }
-
-  // Jira authentication with state
-  async loginJira(state: string): Promise<void> {
+  // Notion Authentication
+  async loginNotion(state: string): Promise<void> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const url = `${API_BASE_URL}/login/jira?state=${state}`;
-    const popup = window.open(url, "jira-auth", "width=600,height=700");
+    const url = `${API_BASE_URL}/login/notion?state=${state}`;
+    const popup = window.open(url, "notion-auth", "width=600,height=700");
 
     if (!popup) {
       throw new Error("Failed to open popup window. Please allow popups.");
@@ -489,17 +379,17 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
         if (popup.closed) {
           clearInterval(checkClosed);
           window.removeEventListener("message", messageHandler);
-          this.checkJiraStatus(state).then(() => resolve()).catch(reject);
+          this.checkNotionStatus(state).then(() => resolve()).catch(reject);
         }
       }, 1000);
 
       const messageHandler = (event: MessageEvent) => {
-        if (event.data?.type === "jira_auth_success" || event.data === "jira_auth_success") {
+        if (event.data?.type === "notion_auth_success" || event.data === "notion_auth_success") {
           clearInterval(checkClosed);
           window.removeEventListener("message", messageHandler);
           popup.close();
           resolve();
-        } else if (event.data?.type === "jira_auth_error") {
+        } else if (event.data?.type === "notion_auth_error") {
           clearInterval(checkClosed);
           window.removeEventListener("message", messageHandler);
           popup.close();
@@ -517,70 +407,49 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
     });
   }
 
-  // Check Jira authentication status
-  async checkJiraStatus(state: string): Promise<{ authenticated: boolean }> {
+  // Check Notion authentication status
+  async checkNotionStatus(state: string): Promise<{ authenticated: boolean }> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const response = await this.request(`${API_BASE_URL}/jira/status?state=${state}`);
+    const response = await this.request(`${API_BASE_URL}/notion/status?state=${state}`);
     return response.json();
   }
 
-  // Get Jira projects
-  async getJiraProjects(state: string): Promise<any> {
+  // Get Notion databases
+  async getNotionDatabases(state: string): Promise<any> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const response = await this.request(`${API_BASE_URL}/jira/projects?state=${state}`);
+    const response = await this.request(`${API_BASE_URL}/notion/databases?state=${state}`);
     return response.json();
   }
 
-  // Get Jira request types for Service Desk
-  async getJiraRequestTypes(state: string, serviceDeskId: string): Promise<any> {
-    if (!state || !serviceDeskId) {
-      throw new Error("State and serviceDeskId are required");
+  // Get Notion pages
+  async getNotionPages(state: string, databaseId?: string): Promise<any> {
+    if (!state) {
+      throw new Error("State parameter is required");
     }
 
-    const response = await this.request(
-      `${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`
-    );
+    let url = `${API_BASE_URL}/notion/pages?state=${state}`;
+    if (databaseId) {
+      url += `&database_id=${databaseId}`;
+    }
+
+    const response = await this.request(url);
     return response.json();
   }
 
-  // Create Jira issues - FIXED VERSION
-  async createJiraIssues(options: JiraOptions): Promise<any> {
-    // Enhanced validation with better error messages
-    if (!options) {
-      console.error("CRITICAL ERROR: options is null/undefined");
-      throw new Error("Options parameter is required and cannot be null or undefined");
+  // Create Notion pages
+  async createNotionPages(options: NotionOptions): Promise<any> {
+    if (!options || typeof options !== 'object') {
+      throw new Error("Options parameter is required and must be an object");
     }
 
-    if (typeof options !== 'object') {
-      console.error("CRITICAL ERROR: options is not an object, got:", typeof options, options);
-      throw new Error("Options must be an object");
-    }
-
-    // Log the actual options received for debugging
-    console.log("🔍 DEBUGGING createJiraIssues called with:", {
-      optionsType: typeof options,
-      optionsKeys: Object.keys(options || {}),
-      state: options?.state,
-      projectType: options?.projectType,
-      tasks: options?.tasks ? `Array(${options.tasks.length})` : 'undefined/null',
-      projectKey: options?.projectKey,
-      serviceDeskId: options?.serviceDeskId,
-      requestTypeId: options?.requestTypeId,
-    });
-
-    // Validate required fields
     if (!options.state || typeof options.state !== 'string') {
       throw new Error(`State must be a non-empty string, got: ${typeof options.state} - ${options.state}`);
-    }
-
-    if (!options.projectType || !["software", "jsm"].includes(options.projectType)) {
-      throw new Error(`Project type must be 'software' or 'jsm', got: ${options.projectType}`);
     }
 
     if (!options.tasks || !Array.isArray(options.tasks)) {
@@ -589,20 +458,6 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
 
     if (options.tasks.length === 0) {
       throw new Error("Tasks array cannot be empty");
-    }
-
-    // Validate project-specific requirements
-    if (options.projectType === "software" && !options.projectKey) {
-      throw new Error("projectKey is required for software projects");
-    }
-
-    if (options.projectType === "jsm") {
-      if (!options.serviceDeskId) {
-        throw new Error("serviceDeskId is required for JSM projects");
-      }
-      if (!options.requestTypeId) {
-        throw new Error("requestTypeId is required for JSM projects");
-      }
     }
 
     // Validate task structure
@@ -615,21 +470,31 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
       }
     });
 
-    // Build payload matching backend expectations
+    // Validate creation options
+    if (options.createNewDatabase) {
+      if (!options.databaseTitle) {
+        throw new Error("databaseTitle is required when createNewDatabase is true");
+      }
+      if (!options.parentPageId) {
+        throw new Error("parentPageId is required when createNewDatabase is true");
+      }
+    } else if (!options.databaseId) {
+      throw new Error("databaseId is required when not creating a new database");
+    }
+
     const payload = {
       state: options.state,
-      project_type: options.projectType, // Backend expects project_type
       tasks: options.tasks,
-      // Add optional fields only if they exist
-      ...(options.projectKey && { project_key: options.projectKey }),
-      ...(options.serviceDeskId && { service_desk_id: options.serviceDeskId }),
-      ...(options.requestTypeId && { request_type_id: options.requestTypeId }),
+      database_id: options.databaseId,
+      parent_page_id: options.parentPageId,
+      create_new_database: options.createNewDatabase || false,
+      database_title: options.databaseTitle,
     };
 
-    console.log("🚀 Sending payload to backend:", JSON.stringify(payload, null, 2));
+    console.log("Sending payload to Notion backend:", JSON.stringify(payload, null, 2));
 
     try {
-      const response = await this.request(`${API_BASE_URL}/jira/create`, {
+      const response = await this.request(`${API_BASE_URL}/notion/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -639,16 +504,16 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
       });
 
       const data = await response.json();
-      console.log("✅ Issues created successfully:", data);
+      console.log("Pages created successfully:", data);
       return data;
     } catch (error) {
-      console.error("❌ Error creating Jira issues:", error);
+      console.error("Error creating Notion pages:", error);
       throw error;
     }
   }
 
-  // Parse Word document to tasks
-  async parseWordToTasks(file: File): Promise<{ state: string; tasks: JiraTask[] }> {
+  // Parse Word document for Notion
+  async parseWordToNotionTasks(file: File): Promise<{ state: string; tasks: NotionTask[] }> {
     if (!file) {
       throw new Error("File is required");
     }
@@ -656,77 +521,195 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await this.request(`${API_BASE_URL}/convert/word-to-jira`, {
+    const response = await this.request(`${API_BASE_URL}/convert/word-to-notion`, {
       method: "POST",
       body: formData,
     });
 
     const data = await response.json();
     if (!data.tasks || !Array.isArray(data.tasks)) {
-      console.error("Invalid tasks from parseWordToTasks:", data.tasks);
+      console.error("Invalid tasks from parseWordToNotionTasks:", data.tasks);
       throw new Error("Parsed tasks must be a non-empty array");
     }
     return data;
   }
 
-  // Get tasks by state
-  async getTasks(state: string): Promise<{ tasks: JiraTask[]; filename?: string }> {
+  // Get Notion tasks by state
+  async getNotionTasks(state: string): Promise<{ tasks: NotionTask[]; filename?: string }> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const response = await this.request(`${API_BASE_URL}/tasks/${state}`);
+    const response = await this.request(`${API_BASE_URL}/tasks/notion/${state}`);
     return response.json();
   }
 
-  // Clear session
-  async clearSession(state: string): Promise<any> {
+  // Clear Notion session
+  async clearNotionSession(state: string): Promise<any> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const response = await this.request(`${API_BASE_URL}/session/${state}`, {
+    const response = await this.request(`${API_BASE_URL}/session/notion/${state}`, {
       method: "DELETE",
     });
     return response.json();
   }
 
-  // Jira to Word conversion
-  async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
+  // Notion to Word conversion
+  async notionToWord(state: string, databaseId?: string, pageIds?: string): Promise<Blob> {
     if (!state) {
       throw new Error("State parameter is required");
     }
 
-    const url = new URL(`${API_BASE_URL}/convert/jira-to-word`);
-    url.searchParams.append("state", state);
-    if (projectKey) url.searchParams.append("project_key", projectKey);
-    if (jql) url.searchParams.append("jql", jql);
+    const formData = new FormData();
+    formData.append("state", state);
+    if (databaseId) formData.append("database_id", databaseId);
+    if (pageIds) formData.append("page_ids", pageIds);
 
-    const response = await this.request(url.toString(), {
+    const response = await this.request(`${API_BASE_URL}/convert/notion-to-word`, {
       method: "POST",
+      body: formData,
     });
 
     return response.blob();
   }
 
-  // PDF to Notion conversion
-  async pdfToNotion(file: File): Promise<any> {
+  // Get Notion user profile
+  async getNotionUserProfile(state: string): Promise<any> {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
+    const response = await this.request(`${API_BASE_URL}/user/notion-profile?state=${state}`);
+    return response.json();
+  }
+
+  // Get Notion login URL
+  async getNotionLoginUrl(state: string): Promise<{ auth_url: string }> {
+    if (!state) {
+      throw new Error("State parameter is required");
+    }
+
+    const response = await this.request(`${API_BASE_URL}/auth/notion-login-url?state=${state}`);
+    return response.json();
+  }
+
+  // Enhanced convert method to handle PDF to Jira/Notion
+  async convertAdvanced(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("target", target);
+
+    // Special handling for PDF to Jira/Notion conversions
+    if (file.type === "application/pdf" && (target === "jira" || target === "notion")) {
+      // These will return JSON with extracted tasks instead of converted file
+      const response = await this.request(`${API_BASE_URL}/convert`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      // Convert the JSON response to a downloadable blob
+      const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { 
+        type: "application/json" 
+      });
+      
+      const originalName = file.name.split(".")[0];
+      const fileName = `${originalName}_${target}_tasks.json`;
+      
+      return { blob: jsonBlob, fileName };
+    }
+
+    // Standard conversion
+    return this.convert(file, target);
+  }
+
+  // PDF to specific platform conversions
+  async pdfToJira(file: File): Promise<{ tasks: any[]; state: string }> {
     if (!file) {
       throw new Error("File is required");
     }
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("target", "jira");
 
-    const response = await this.request(`${API_BASE_URL}/convert/pdf-to-notion`, {
+    const response = await this.request(`${API_BASE_URL}/convert`, {
       method: "POST",
       body: formData,
     });
 
     return response.json();
   }
-  // Add split functionality
-  async split(file: File, pageRanges: string): Promise<Blob[]> {
+
+  async pdfToNotion(file: File): Promise<{ tasks: any[]; state: string }> {
+    if (!file) {
+      throw new Error("File is required");
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("target", "notion");
+
+    const response = await this.request(`${API_BASE_URL}/convert`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return response.json();
+  }
+
+  // Enhanced compress method - fix the broken functionality
+  async compressAdvanced(file: File, compressionType: string, level: string = "medium"): Promise<Blob> {
+    if (!file) {
+      throw new Error("File is required");
+    }
+
+    const formData = new FormData();
+    formData.append("compress_type", compressionType);
+    formData.append("file", file);
+    formData.append("level", level);
+
+    const response = await this.request(`${API_BASE_URL}/compress`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return response.blob();
+  }
+
+  // Enhanced merge method - fix the broken functionality  
+  async mergeAdvanced(files: File[], mergeType: string): Promise<Blob> {
+    if (!files || files.length === 0) {
+      throw new Error("At least one file is required");
+    }
+
+    const formData = new FormData();
+    formData.append("merge_type", mergeType);
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    const response = await this.request(`${API_BASE_URL}/merge`, {
+      method: "POST",
+      body: formData,
+    });
+
+    return response.blob();
+  }
+
+  // Split method - implement the missing functionality
+  async splitAdvanced(file: File, pageRanges: string): Promise<Blob> {
+    if (!file) {
+      throw new Error("File is required");
+    }
+
+    if (!pageRanges.trim()) {
+      throw new Error("Page ranges are required");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("page_ranges", pageRanges);
@@ -736,46 +719,10 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
       body: formData,
     });
 
-    const blob = await response.blob();
-    return [blob]; // Return as array for consistency
-  }
-
-  // Get Jira login URL
-  async getJiraLoginUrl(state: string): Promise<{ auth_url: string }> {
-    if (!state) {
-      throw new Error("State parameter is required");
-    }
-
-    const response = await this.request(`${API_BASE_URL}/login/jira?state=${state}`);
-    return response.json();
-  }
-
-  // HTML to PDF conversion
-  async htmlToPdf(htmlContent?: string, url?: string): Promise<Blob> {
-    if (url) {
-      return this.convertUrl(url, "pdf");
-    } else if (htmlContent) {
-      const blob = new Blob([htmlContent], { type: "text/html" });
-      const file = new File([blob], "content.html", { type: "text/html" });
-      return this.convert(file, "pdf");
-    } else {
-      throw new Error("Either HTML content or URL must be provided");
-    }
-  }
-
-  // Get user profile
-  async getUserProfile(state: string): Promise<any> {
-    if (!state) {
-      throw new Error("State parameter is required");
-    }
-
-    const response = await this.request(`${API_BASE_URL}/user/profile?state=${state}`);
-    return response.json();
+    return response.blob();
   }
 }
 
-// Export singleton instance
+// Export updated API instance
 export const pdfApi = new PdfAPI();
-
-// Export types for external use
-export type { JiraTask, JiraOptions };
+export type { NotionTask, NotionOptions };
