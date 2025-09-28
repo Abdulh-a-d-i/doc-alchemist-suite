@@ -1,4 +1,3 @@
-// Fixed src/pages/Merge.tsx
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { FileUpload } from "@/components/FileUpload";
@@ -19,6 +18,8 @@ const Merge = () => {
   const navigate = useNavigate();
 
   const handleMerge = async () => {
+    console.log("Merge button clicked!", { files, mergeType }); // Debug log
+    
     if (files.length < 2) {
       toast({
         title: "Error",
@@ -31,28 +32,14 @@ const Merge = () => {
     setIsProcessing(true);
 
     try {
-      // Use the fixed mergeAdvanced method
-      const result = await pdfApi.mergeAdvanced(files, mergeType);
+      // Use the basic merge method that exists in your API
+      const result = await pdfApi.merge(files);
       
       // Download the merged file
       const url = window.URL.createObjectURL(result);
       const a = document.createElement('a');
       a.href = url;
-
-      // Determine file extension based on merge type
-      const getExtension = (type: string) => {
-        const extensions: { [key: string]: string } = {
-          'pdf': 'pdf',
-          'word': 'docx',
-          'powerpoint': 'pptx', 
-          'excel': 'xlsx',
-          'images': 'pdf' // Images merge to PDF
-        };
-        return extensions[type] || 'file';
-      };
-
-      const ext = getExtension(mergeType);
-      a.download = `merged.${ext}`;
+      a.download = 'merged.pdf';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -65,6 +52,7 @@ const Merge = () => {
       
       setFiles([]);
     } catch (error: any) {
+      console.error("Merge error:", error); // Debug log
       toast({
         title: "Error",
         description: error.message || "Failed to merge files. Please try again.",
@@ -95,7 +83,7 @@ const Merge = () => {
   const getMaxFiles = () => {
     switch (mergeType) {
       case 'images':
-        return 20; // Allow more images
+        return 20;
       default:
         return 10;
     }
@@ -138,7 +126,7 @@ const Merge = () => {
                 </Label>
                 <Select value={mergeType} onValueChange={(value) => {
                   setMergeType(value);
-                  setFiles([]); // Clear files when type changes
+                  setFiles([]);
                 }}>
                   <SelectTrigger className="glass-card">
                     <SelectValue placeholder="Select file type" />
@@ -207,44 +195,6 @@ const Merge = () => {
               )}
             </CardContent>
           </Card>
-
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <GitMerge className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Multiple Formats</h3>
-                <p className="text-sm text-muted-foreground">
-                  Merge various file types seamlessly
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0.2s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Download className="h-6 w-6 text-success" />
-                </div>
-                <h3 className="font-semibold mb-2">Batch Processing</h3>
-                <p className="text-sm text-muted-foreground">
-                  Combine up to {getMaxFiles()} files at once
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ArrowLeft className="h-6 w-6 text-warning" />
-                </div>
-                <h3 className="font-semibold mb-2">Smart Order</h3>
-                <p className="text-sm text-muted-foreground">
-                  Files merged in upload order
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </div>
