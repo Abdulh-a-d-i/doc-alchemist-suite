@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,102 +12,89 @@ interface FileUploadProps {
   description?: string;
 }
 
-export const FileUpload = ({ 
-  onFilesSelected, 
-  acceptedTypes = ['.pdf'], 
+export const FileUpload = ({
+  onFilesSelected,
+  acceptedTypes = [".pdf"],
   maxFiles = 1,
   title = "Select PDF files",
-  description = "Drag and drop your files here or click to browse"
+  description = "Drag and drop your files here or click to browse",
 }: FileUploadProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    console.log('FileUpload: onDrop called with files:', acceptedFiles);
-    console.log('FileUpload: current uploadedFiles:', uploadedFiles);
-    console.log('FileUpload: maxFiles:', maxFiles);
-    
-    const newFiles = [...uploadedFiles, ...acceptedFiles].slice(0, maxFiles);
-    console.log('FileUpload: newFiles after processing:', newFiles);
-    
-    setUploadedFiles(newFiles);
-    onFilesSelected(newFiles);
-    
-    console.log('FileUpload: files passed to parent component:', newFiles);
-  }, [onFilesSelected, uploadedFiles, maxFiles]);
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const newFiles = [...uploadedFiles, ...acceptedFiles].slice(0, maxFiles);
+      setUploadedFiles(newFiles);
+      onFilesSelected(newFiles);
+    },
+    [onFilesSelected, uploadedFiles, maxFiles]
+  );
 
-  const removeFile = (index: number) => {
-    console.log('FileUpload: removeFile called for index:', index);
-    const newFiles = uploadedFiles.filter((_, i) => i !== index);
-    console.log('FileUpload: files after removal:', newFiles);
-    setUploadedFiles(newFiles);
-    onFilesSelected(newFiles);
-  };
-
-  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: acceptedTypes.reduce((acc, type) => {
-      // Map file extensions to MIME types
       const mimeTypeMap: Record<string, string[]> = {
-        '.pdf': ['application/pdf'],
-        '.doc': ['application/msword'],
-        '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        '.jpg': ['image/jpeg'],
-        '.jpeg': ['image/jpeg'],
-        '.png': ['image/png'],
-        '.gif': ['image/gif'],
-        '.bmp': ['image/bmp'],
-        '.tiff': ['image/tiff'],
-        '.json': ['application/json'],
-        '.txt': ['text/plain'],
-        '.zip': ['application/zip'],
-        '.html': ['text/html'],
-        '.md': ['text/markdown']
+        ".pdf": ["application/pdf"],
+        ".doc": ["application/msword"],
+        ".docx": [
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ],
+        ".jpg": ["image/jpeg"],
+        ".jpeg": ["image/jpeg"],
+        ".png": ["image/png"],
+        ".gif": ["image/gif"],
+        ".bmp": ["image/bmp"],
+        ".tiff": ["image/tiff"],
+        ".json": ["application/json"],
+        ".txt": ["text/plain"],
+        ".zip": ["application/zip"],
+        ".html": ["text/html"],
+        ".md": ["text/markdown"],
       };
-      
       const mimeTypes = mimeTypeMap[type] || [];
-      mimeTypes.forEach(mimeType => {
+      mimeTypes.forEach((mimeType) => {
         acc[mimeType] = [];
       });
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
-    //noClick: true, // Disable automatic click to prevent conflicts
-    onDropAccepted: (files) => {
-      console.log('FileUpload: onDropAccepted called with files:', files);
-    },
-    onDropRejected: (rejectedFiles) => {
-      console.log('FileUpload: onDropRejected called with rejected files:', rejectedFiles);
-    },
-    onError: (error) => {
-      console.error('FileUpload: dropzone error:', error);
-    }
+    noClick: true, // disable auto click (we handle manually)
   });
 
-  console.log('FileUpload: Component render - acceptedTypes:', acceptedTypes);
-  console.log('FileUpload: Component render - uploadedFiles:', uploadedFiles);
+  const removeFile = (index: number) => {
+    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    setUploadedFiles(newFiles);
+    onFilesSelected(newFiles);
+  };
 
   return (
     <div className="space-y-4">
-      <Card 
-        {...getRootProps()} 
-        className={`border-2 border-dashed p-8 text-center transition-colors ${
-          isDragActive 
-            ? 'border-primary bg-accent' 
-            : 'border-muted-foreground/25 hover:border-primary/50'
-        }`}
-      >
-        <input {...getInputProps()} />
-        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        <h3 className="text-lg font-medium mb-2">{title}</h3>
-        <p className="text-muted-foreground mb-4">{description}</p>
-        <Button 
-          type="button" 
-          variant="outline" 
+      <Card className="border-2 border-dashed p-8 text-center transition-colors">
+        {/* Dropzone clickable area */}
+        <div
+          {...getRootProps()}
+          className={`cursor-pointer transition-colors ${
+            isDragActive
+              ? "border-primary bg-accent border-2 border-dashed"
+              : "border-muted-foreground/25 hover:border-primary/50 border-2 border-dashed"
+          } p-6 rounded-lg`}
+        >
+          <input {...getInputProps()} ref={inputRef} />
+          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-medium mb-2">{title}</h3>
+          <p className="text-muted-foreground mb-4">{description}</p>
+        </div>
+
+        {/* Choose Files button OUTSIDE dropzone */}
+        <Button
+          type="button"
+          variant="outline"
           onClick={(e) => {
             e.stopPropagation();
-            console.log('FileUpload: Choose Files button clicked, calling open()');
-            open();
+            inputRef.current?.click();
           }}
+          className="mt-4"
         >
           Choose Files
         </Button>
@@ -117,7 +104,10 @@ export const FileUpload = ({
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Selected Files:</h4>
           {uploadedFiles.map((file, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-accent rounded-lg">
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-accent rounded-lg"
+            >
               <div className="flex items-center space-x-3">
                 <File className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">{file.name}</span>
