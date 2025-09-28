@@ -359,7 +359,262 @@ interface NotionOptions {
 }
 
 class PdfAPI {
-  // ... (keep all existing methods)
+  private sessionId: string | null = null;
+
+  // 🔑 central helper to inject headers into every fetch
+  private async request(url: string, options: RequestInit = {}) {
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        "ngrok-skip-browser-warning": "true", // bypass ngrok banner
+        "Accept": "application/json, text/plain, */*",
+      },
+    });
+
+    return response;
+  }
+
+  // Convert files using the /convert endpoint
+  async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("target", target);
+
+    const response = await this.request(`${API_BASE_URL}/convert`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Conversion failed: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const originalName = file.name.split(".")[0];
+    const fileName = `${originalName}.${target}`;
+    
+    return { blob, fileName };
+  }
+
+  // Compress PDF files
+  async compress(file: File, level: string = "medium"): Promise<Blob> {
+    const formData = new FormData();
+    formData.append("compress_type", "pdf");
+    formData.append("file", file);
+    formData.append("level", level);
+
+    const response = await this.request(`${API_BASE_URL}/compress`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Compression failed: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  // Merge multiple PDF files
+  async merge(files: File[]): Promise<Blob> {
+    const formData = new FormData();
+    formData.append("merge_type", "pdf");
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    const response = await this.request(`${API_BASE_URL}/merge`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Merge failed: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  // Split PDF files
+  async split(file: File, pages: string): Promise<Blob> {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("page_ranges", pages);
+
+    const response = await this.request(`${API_BASE_URL}/split`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Split failed: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
+
+  // HTML to PDF conversion
+  async htmlToPdf(htmlContent?: string, url?: string): Promise<Blob> {
+    if (url) {
+      const formData = new FormData();
+      formData.append("url", url);
+      formData.append("target", "pdf");
+
+      const response = await this.request(`${API_BASE_URL}/convert-url`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`URL conversion failed: ${response.statusText}`);
+      }
+
+      return response.blob();
+    } else if (htmlContent) {
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      const file = new File([blob], "content.html", { type: "text/html" });
+      const result = await this.convert(file, "pdf");
+      return result.blob;
+    } else {
+      throw new Error("Either HTML content or URL must be provided");
+    }
+  }
+
+  // Jira authentication methods
+  async loginJira(state: string): Promise<void> {
+    const url = `${API_BASE_URL}/login/jira?state=${state}`;
+    const popup = window.open(url, "jira-auth", "width=600,height=700");
+
+    return new Promise((resolve, reject) => {
+      const checkClosed = setInterval(() => {
+        if (popup?.closed) {
+          clearInterval(checkClosed);
+          this.checkJiraStatus(state).then(() => resolve()).catch(reject);
+        }
+      }, 1000);
+
+      const messageHandler = (event: MessageEvent) => {
+        if (event.data === "jira_auth_success") {
+          clearInterval(checkClosed);
+          popup?.close();
+          window.removeEventListener("message", messageHandler);
+          resolve();
+        }
+      };
+      window.addEventListener("message", messageHandler);
+
+      setTimeout(() => {
+        clearInterval(checkClosed);
+        popup?.close();
+        window.removeEventListener("message", messageHandler);
+        reject(new Error("Authentication timeout"));
+      }, 300000);
+    });
+  }
+
+  async checkJiraStatus(state: string): Promise<{ authenticated: boolean }> {
+    const response = await this.request(`${API_BASE_URL}/jira/status?state=${state}`);
+    const data = await response.json();
+
+    if (!data.authenticated) {
+      throw new Error("Jira authentication failed");
+    }
+    
+    return data;
+  }
+
+  async getJiraProjects(state: string) {
+    const response = await this.request(`${API_BASE_URL}/jira/projects?state=${state}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async getJiraLoginUrl(state: string): Promise<{ auth_url: string }> {
+    const response = await this.request(`${API_BASE_URL}/auth/jira-login-url?state=${state}`);
+    return response.json();
+  }
+
+  async getJiraRequestTypes(state: string, serviceDeskId: string) {
+    const response = await this.request(`${API_BASE_URL}/jira/request-types?state=${state}&service_desk_id=${serviceDeskId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch request types: ${response.statusText}`);
+    }
+    return response.json();
+  }
+
+  async createJiraIssues(state: string, projectType: "software" | "jsm", tasks: any[], projectKey?: string, serviceDeskId?: string, requestTypeId?: string) {
+    const payload: any = {
+      state,
+      project_type: projectType,
+      tasks
+    };
+
+    if (projectType === "software") {
+      if (!projectKey) {
+        throw new Error("projectKey is required for software projects");
+      }
+      payload.project_key = projectKey;
+    }
+
+    if (projectType === "jsm") {
+      if (!serviceDeskId || !requestTypeId) {
+        throw new Error("serviceDeskId and requestTypeId are required for JSM projects");
+      }
+      payload.service_desk_id = serviceDeskId;
+      payload.request_type_id = requestTypeId;
+    }
+
+    const response = await this.request(`${API_BASE_URL}/jira/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail || "Failed to create Jira issues");
+    }
+
+    return response.json();
+  }
+
+  async parseWordToTasks(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await this.request(`${API_BASE_URL}/convert/word-to-jira`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to parse Word document: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  async jiraToWord(state: string, projectKey?: string, jql?: string): Promise<Blob> {
+    const url = new URL(`${API_BASE_URL}/convert/jira-to-word`);
+    if (projectKey) url.searchParams.append("project_key", projectKey);
+    if (jql) url.searchParams.append("jql", jql);
+    url.searchParams.append("state", state);
+
+    const response = await this.request(url.toString(), {
+      method: "POST",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Jira to Word conversion failed: ${response.statusText}`);
+    }
+
+    return response.blob();
+  }
 
   // Notion Authentication
   async loginNotion(state: string): Promise<void> {

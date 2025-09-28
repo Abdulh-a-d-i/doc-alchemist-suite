@@ -122,14 +122,15 @@ export const WordToJiraFlow = ({ open, onOpenChange }: WordToJiraFlowProps) => {
   const handleCreateIssues = async () => {
   setIsProcessing(true);
   try {
-    const result = await pdfApi.createJiraIssues({
+    const projectType = selectedProject ? "software" : "jsm";
+    const result = await pdfApi.createJiraIssues(
       state,
-      projectType: selectedProject ? "software" : "jsm",
-      projectKey: selectedProject || undefined,
-      serviceDeskId: selectedDesk || undefined,
-      requestTypeId: selectedRequestType || undefined,
+      projectType,
       tasks,
-    });
+      selectedProject || undefined,
+      selectedDesk || undefined,
+      selectedRequestType || undefined
+    );
 
     setCreatedIssues(result.created || []);
     setStep('success');
