@@ -37,9 +37,7 @@ export const FileUpload = ({
       const mimeTypeMap: Record<string, string[]> = {
         ".pdf": ["application/pdf"],
         ".doc": ["application/msword"],
-        ".docx": [
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        ],
+        ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
         ".jpg": ["image/jpeg"],
         ".jpeg": ["image/jpeg"],
         ".png": ["image/png"],
@@ -59,7 +57,7 @@ export const FileUpload = ({
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
-    noClick: true, // disable auto click (we handle manually)
+    noClick: true, // we handle clicks manually
   });
 
   const removeFile = (index: number) => {
@@ -71,7 +69,7 @@ export const FileUpload = ({
   return (
     <div className="space-y-4">
       <Card className="border-2 border-dashed p-8 text-center transition-colors">
-        {/* Dropzone clickable area */}
+        {/* Dropzone area */}
         <div
           {...getRootProps()}
           className={`cursor-pointer transition-colors ${
@@ -80,20 +78,19 @@ export const FileUpload = ({
               : "border-muted-foreground/25 hover:border-primary/50 border-2 border-dashed"
           } p-6 rounded-lg`}
         >
+          {/* Hidden input with ref */}
           <input {...getInputProps()} ref={inputRef} />
+
           <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-medium mb-2">{title}</h3>
           <p className="text-muted-foreground mb-4">{description}</p>
         </div>
 
-        {/* Choose Files button OUTSIDE dropzone */}
+        {/* Real working button */}
         <Button
           type="button"
           variant="outline"
-          onClick={(e) => {
-            e.stopPropagation();
-            inputRef.current?.click();
-          }}
+          onClick={() => inputRef.current?.click()}
           className="mt-4"
         >
           Choose Files
