@@ -22,18 +22,28 @@ export const FileUpload = ({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log('FileUpload: onDrop called with files:', acceptedFiles);
+    console.log('FileUpload: current uploadedFiles:', uploadedFiles);
+    console.log('FileUpload: maxFiles:', maxFiles);
+    
     const newFiles = [...uploadedFiles, ...acceptedFiles].slice(0, maxFiles);
+    console.log('FileUpload: newFiles after processing:', newFiles);
+    
     setUploadedFiles(newFiles);
     onFilesSelected(newFiles);
+    
+    console.log('FileUpload: files passed to parent component:', newFiles);
   }, [onFilesSelected, uploadedFiles, maxFiles]);
 
   const removeFile = (index: number) => {
+    console.log('FileUpload: removeFile called for index:', index);
     const newFiles = uploadedFiles.filter((_, i) => i !== index);
+    console.log('FileUpload: files after removal:', newFiles);
     setUploadedFiles(newFiles);
     onFilesSelected(newFiles);
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: acceptedTypes.reduce((acc, type) => {
       // Map file extensions to MIME types
@@ -61,7 +71,20 @@ export const FileUpload = ({
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
+    noClick: true, // Disable automatic click to prevent conflicts
+    onDropAccepted: (files) => {
+      console.log('FileUpload: onDropAccepted called with files:', files);
+    },
+    onDropRejected: (rejectedFiles) => {
+      console.log('FileUpload: onDropRejected called with rejected files:', rejectedFiles);
+    },
+    onError: (error) => {
+      console.error('FileUpload: dropzone error:', error);
+    }
   });
+
+  console.log('FileUpload: Component render - acceptedTypes:', acceptedTypes);
+  console.log('FileUpload: Component render - uploadedFiles:', uploadedFiles);
 
   return (
     <div className="space-y-4">
@@ -77,7 +100,15 @@ export const FileUpload = ({
         <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
         <h3 className="text-lg font-medium mb-2">{title}</h3>
         <p className="text-muted-foreground mb-4">{description}</p>
-        <Button type="button" variant="outline">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('FileUpload: Choose Files button clicked, calling open()');
+            open();
+          }}
+        >
           Choose Files
         </Button>
       </Card>
