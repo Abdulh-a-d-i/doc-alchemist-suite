@@ -142,28 +142,16 @@ const Compress = () => {
                     >
                       Clear File
                     </Button>
-                    <div 
-                      style={{color: 'red', fontSize: '12px'}}>
-                      DEBUG: files.length={files.length},
-                      isProcessing={isProcessing},
-                      disabled={isProcessing || files.length === 0}
+                   <div style={{color: 'red', fontSize: '12px'}}>
+                    Files: {files.length} | Processing: {String(isProcessing)} | Disabled: {String(isProcessing || files.length === 0)}
                     </div>
                     <Button 
                     onClick={handleCompress}
-                    disabled={false}  // Force it to be enabled for testing
+                    disabled={false}  // FORCE ENABLED FOR TESTING
                     className="flex-1 glow-effect"
                   >
-                    {isProcessing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Compressing...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4 mr-2" />
-                        Compress File
-                      </>
-                    )}
+                    <Download className="h-4 w-4 mr-2" />
+                    Compress File (FORCED ENABLED)
                   </Button>
                   </div>
                 </div>
