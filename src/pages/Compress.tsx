@@ -1,4 +1,3 @@
-// Fixed src/pages/Compress.tsx
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { FileUpload } from "@/components/FileUpload";
@@ -14,12 +13,13 @@ import { useNavigate } from "react-router-dom";
 const Compress = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [compressionLevel, setCompressionLevel] = useState("medium");
-  const [compressionType, setCompressionType] = useState("pdf");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const handleCompress = async () => {
+    console.log("Compress button clicked!", { files, compressionLevel });
+    
     if (files.length === 0) {
       toast({
         title: "Error",
@@ -32,30 +32,16 @@ const Compress = () => {
     setIsProcessing(true);
 
     try {
-      // Use the fixed compressAdvanced method
-      const result = await pdfApi.compressAdvanced(files[0], compressionType, compressionLevel);
+      // Use the basic compress method that exists in your API
+      const result = await pdfApi.compress(files[0], compressionLevel);
       
       // Download the compressed file
       const url = window.URL.createObjectURL(result);
       const a = document.createElement('a');
       a.href = url;
       
-      // Determine file extension based on compression type
-      const getExtension = (type: string) => {
-        const extensions: { [key: string]: string } = {
-          'pdf': 'pdf',
-          'word': 'docx', 
-          'powerpoint': 'pptx',
-          'excel': 'xlsx',
-          'csv': 'csv',
-          'jpg': 'jpg'
-        };
-        return extensions[type] || 'file';
-      };
-
-      const ext = getExtension(compressionType);
       const originalName = files[0].name.split('.')[0];
-      a.download = `compressed_${originalName}.${ext}`;
+      a.download = `compressed_${originalName}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -68,6 +54,7 @@ const Compress = () => {
       
       setFiles([]);
     } catch (error: any) {
+      console.error("Compression error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to compress file. Please try again.",
@@ -75,25 +62,6 @@ const Compress = () => {
       });
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const getAcceptedTypes = () => {
-    switch (compressionType) {
-      case 'pdf':
-        return ['.pdf'];
-      case 'word':
-        return ['.docx', '.doc'];
-      case 'powerpoint':
-        return ['.pptx', '.ppt'];
-      case 'excel':
-        return ['.xlsx', '.xls'];
-      case 'csv':
-        return ['.csv'];
-      case 'jpg':
-        return ['.jpg', '.jpeg'];
-      default:
-        return ['.pdf'];
     }
   };
 
@@ -123,39 +91,17 @@ const Compress = () => {
                 Compress Files
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Reduce file size while maintaining quality. Choose your compression type and level.
+                Reduce file size while maintaining quality. Choose your compression level.
               </p>
             </CardHeader>
             
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="compression-type" className="text-foreground">
-                  File Type
-                </Label>
-                <Select value={compressionType} onValueChange={(value) => {
-                  setCompressionType(value);
-                  setFiles([]); // Clear files when type changes
-                }}>
-                  <SelectTrigger className="glass-card">
-                    <SelectValue placeholder="Select file type" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card">
-                    <SelectItem value="pdf">PDF Files</SelectItem>
-                    <SelectItem value="word">Word Documents</SelectItem>
-                    <SelectItem value="powerpoint">PowerPoint Presentations</SelectItem>
-                    <SelectItem value="excel">Excel Spreadsheets</SelectItem>
-                    <SelectItem value="csv">CSV Files</SelectItem>
-                    <SelectItem value="jpg">JPEG Images</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <FileUpload
                 onFilesSelected={setFiles}
-                acceptedTypes={getAcceptedTypes()}
+                acceptedTypes={['.pdf']}
                 maxFiles={1}
-                title={`Select ${compressionType.toUpperCase()} file to compress`}
-                description={`Choose the ${compressionType.toUpperCase()} file you want to reduce in size`}
+                title="Select PDF file to compress"
+                description="Choose the PDF file you want to reduce in size"
               />
 
               <div className="space-y-2">
@@ -178,7 +124,7 @@ const Compress = () => {
                 <div className="space-y-4">
                   <div className="text-center">
                     <p className="text-sm text-muted-foreground">
-                      File size: {(files[0].size / 1024 / 1024).toFixed(2)} MB
+                      Selected: {files[0].name} ({(files[0].size / 1024 / 1024).toFixed(2)} MB)
                     </p>
                   </div>
                   
@@ -232,9 +178,9 @@ const Compress = () => {
                 <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Download className="h-6 w-6 text-success" />
                 </div>
-                <h3 className="font-semibold mb-2">Multiple Formats</h3>
+                <h3 className="font-semibold mb-2">PDF Support</h3>
                 <p className="text-sm text-muted-foreground">
-                  Support for various file types
+                  Optimized for PDF compression
                 </p>
               </CardContent>
             </Card>
