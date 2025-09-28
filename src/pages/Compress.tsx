@@ -142,19 +142,20 @@ const Compress = () => {
                     >
                       Clear File
                     </Button>
-                   <Button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      console.log('Compress button clicked');
-                      handleCompress();
-                    }}
-                    disabled={isProcessing || files.length === 0}
-                    className="flex-1 glow-effect"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Compress File
-                  </Button>
+                    <Button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // Keep if needed, but test removing
+                        // e.preventDefault(); // Remove this—unnecessary for type="button" and may interfere
+                        console.log('Compress button clicked');
+                        handleCompress();
+                      }}
+                      disabled={isProcessing || files.length === 0}
+                      className="flex-1 glow-effect"
+                      style={{ pointerEvents: 'auto', zIndex: 10, userSelect: 'none' }} // Override: ensure clickable, raise above overlays, prevent text select
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Compress File
+                    </Button>
                   </div>
                 </div>
               )}
