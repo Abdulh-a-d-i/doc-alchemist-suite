@@ -142,16 +142,20 @@ const Compress = () => {
                     >
                       Clear File
                     </Button>
-                    <Button 
-                    onClick={() => {
-                      console.log("INLINE CLICK HANDLER CALLED");
-                      alert("Inline handler works!");
+                    <button 
+                    onClick={() => alert("RAW BUTTON WORKS")}
+                    style={{
+                      background: 'red', 
+                      color: 'white', 
+                      padding: '20px', 
+                      fontSize: '16px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      zIndex: 9999
                     }}
-                    className="flex-1 glow-effect"
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Test Click
-                  </Button>
+                    RAW BUTTON TEST
+                  </button>
                   </div>
                 </div>
               )}
