@@ -1,6 +1,7 @@
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils"; // Import cn from shadcn utils if available, or use classnames library
 
 interface FileUploadProps {
   onFilesSelected: (files: File[]) => void;
@@ -21,7 +22,7 @@ export function FileUpload({
     if (!e.target.files) return;
     const files = Array.from(e.target.files).slice(0, maxFiles);
     onFilesSelected(files);
-    e.target.value = ''; // Reset input to allow re-selecting the same file if needed
+    e.target.value = ''; // Reset to allow re-selecting same file
   };
 
   return (
@@ -30,19 +31,20 @@ export function FileUpload({
       <h3 className="text-lg font-medium mb-2">{title}</h3>
       <p className="text-muted-foreground mb-4">{description}</p>
 
-      <input
-        id="file-upload"
-        type="file"
-        accept={acceptedTypes.join(",")}
-        multiple={maxFiles > 1}
-        onChange={handleChange}
-        className="hidden"
-      />
-
-      <label htmlFor="file-upload">
-        <Button type="button" asChild className="mt-4 cursor-pointer">
-          <span>Choose Files</span>
+      <label className="relative inline-block cursor-pointer">
+        <Button 
+          type="button" 
+          className="mt-4 select-none pointer-events-none" // Prevent text selection and pass clicks through
+        >
+          Choose Files
         </Button>
+        <input
+          type="file"
+          accept={acceptedTypes.join(",")}
+          multiple={maxFiles > 1}
+          onChange={handleChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        />
       </label>
     </Card>
   );
