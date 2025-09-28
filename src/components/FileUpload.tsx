@@ -71,7 +71,7 @@ export const FileUpload = ({
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
-    noClick: true, // Disable automatic click to prevent conflicts
+    //noClick: true, // Disable automatic click to prevent conflicts
     onDropAccepted: (files) => {
       console.log('FileUpload: onDropAccepted called with files:', files);
     },
