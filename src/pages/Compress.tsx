@@ -1,3 +1,4 @@
+// Fixed src/pages/Compress.tsx
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { FileUpload } from "@/components/FileUpload";
@@ -13,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 const Compress = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [compressionLevel, setCompressionLevel] = useState("medium");
+  const [compressionType, setCompressionType] = useState("pdf");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ const Compress = () => {
     if (files.length === 0) {
       toast({
         title: "Error",
-        description: "Please select a PDF file to compress",
+        description: "Please select a file to compress",
         variant: "destructive",
       });
       return;
@@ -30,13 +32,30 @@ const Compress = () => {
     setIsProcessing(true);
 
     try {
-      const result = await pdfApi.compress(files[0], compressionLevel);
+      // Use the fixed compressAdvanced method
+      const result = await pdfApi.compressAdvanced(files[0], compressionType, compressionLevel);
       
       // Download the compressed file
       const url = window.URL.createObjectURL(result);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `compressed_${files[0].name}`;
+      
+      // Determine file extension based on compression type
+      const getExtension = (type: string) => {
+        const extensions: { [key: string]: string } = {
+          'pdf': 'pdf',
+          'word': 'docx', 
+          'powerpoint': 'pptx',
+          'excel': 'xlsx',
+          'csv': 'csv',
+          'jpg': 'jpg'
+        };
+        return extensions[type] || 'file';
+      };
+
+      const ext = getExtension(compressionType);
+      const originalName = files[0].name.split('.')[0];
+      a.download = `compressed_${originalName}.${ext}`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -44,18 +63,37 @@ const Compress = () => {
 
       toast({
         title: "Success",
-        description: "PDF compressed successfully!",
+        description: "File compressed successfully!",
       });
       
       setFiles([]);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to compress PDF. Please try again.",
+        description: error.message || "Failed to compress file. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const getAcceptedTypes = () => {
+    switch (compressionType) {
+      case 'pdf':
+        return ['.pdf'];
+      case 'word':
+        return ['.docx', '.doc'];
+      case 'powerpoint':
+        return ['.pptx', '.ppt'];
+      case 'excel':
+        return ['.xlsx', '.xls'];
+      case 'csv':
+        return ['.csv'];
+      case 'jpg':
+        return ['.jpg', '.jpeg'];
+      default:
+        return ['.pdf'];
     }
   };
 
@@ -82,20 +120,42 @@ const Compress = () => {
                 <Archive className="h-10 w-10 text-white" />
               </div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Compress PDF Files
+                Compress Files
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Reduce PDF file size while maintaining quality. Choose your compression level.
+                Reduce file size while maintaining quality. Choose your compression type and level.
               </p>
             </CardHeader>
             
             <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="compression-type" className="text-foreground">
+                  File Type
+                </Label>
+                <Select value={compressionType} onValueChange={(value) => {
+                  setCompressionType(value);
+                  setFiles([]); // Clear files when type changes
+                }}>
+                  <SelectTrigger className="glass-card">
+                    <SelectValue placeholder="Select file type" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-card">
+                    <SelectItem value="pdf">PDF Files</SelectItem>
+                    <SelectItem value="word">Word Documents</SelectItem>
+                    <SelectItem value="powerpoint">PowerPoint Presentations</SelectItem>
+                    <SelectItem value="excel">Excel Spreadsheets</SelectItem>
+                    <SelectItem value="csv">CSV Files</SelectItem>
+                    <SelectItem value="jpg">JPEG Images</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <FileUpload
                 onFilesSelected={setFiles}
-                acceptedTypes={['.pdf']}
+                acceptedTypes={getAcceptedTypes()}
                 maxFiles={1}
-                title="Select PDF file to compress"
-                description="Choose the PDF file you want to reduce in size"
+                title={`Select ${compressionType.toUpperCase()} file to compress`}
+                description={`Choose the ${compressionType.toUpperCase()} file you want to reduce in size`}
               />
 
               <div className="space-y-2">
@@ -144,7 +204,7 @@ const Compress = () => {
                       ) : (
                         <>
                           <Download className="h-4 w-4 mr-2" />
-                          Compress PDF
+                          Compress File
                         </>
                       )}
                     </Button>
@@ -172,9 +232,9 @@ const Compress = () => {
                 <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Download className="h-6 w-6 text-success" />
                 </div>
-                <h3 className="font-semibold mb-2">Quality Preserved</h3>
+                <h3 className="font-semibold mb-2">Multiple Formats</h3>
                 <p className="text-sm text-muted-foreground">
-                  Maintains readability and clarity
+                  Support for various file types
                 </p>
               </CardContent>
             </Card>
@@ -184,9 +244,9 @@ const Compress = () => {
                 <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <ArrowLeft className="h-6 w-6 text-warning" />
                 </div>
-                <h3 className="font-semibold mb-2">Multiple Levels</h3>
+                <h3 className="font-semibold mb-2">Quality Control</h3>
                 <p className="text-sm text-muted-foreground">
-                  Choose your preferred compression
+                  Choose your preferred compression level
                 </p>
               </CardContent>
             </Card>
