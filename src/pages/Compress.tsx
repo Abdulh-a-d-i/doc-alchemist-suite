@@ -142,20 +142,29 @@ const Compress = () => {
                     >
                       Clear File
                     </Button>
-                    <button 
-                    onClick={() => alert("RAW BUTTON WORKS")}
-                    style={{
-                      background: 'red', 
-                      color: 'white', 
-                      padding: '20px', 
-                      fontSize: '16px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      zIndex: 9999
-                    }}
+                    <div 
+                      style={{color: 'red', fontSize: '12px'}}>
+                      DEBUG: files.length={files.length},
+                      isProcessing={isProcessing},
+                      disabled={isProcessing || files.length === 0}
+                    </div>
+                    <Button 
+                    onClick={handleCompress}
+                    disabled={false}  // Force it to be enabled for testing
+                    className="flex-1 glow-effect"
                   >
-                    RAW BUTTON TEST
-                  </button>
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Compressing...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Compress File
+                      </>
+                    )}
+                  </Button>
                   </div>
                 </div>
               )}
