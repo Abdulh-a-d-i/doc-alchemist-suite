@@ -20,11 +20,9 @@ const Compress = () => {
   console.log("Files:", files);
   console.log("isProcessing:", isProcessing);
   const handleCompress = async () => {
-    console.log("=== HANDLE COMPRESS CALLED ===");
-    console.log("Files at start of function:", files);
-    console.log("Compression level:", compressionLevel);
+   
     console.log("Compress button clicked!", { files, compressionLevel });
-    alert("Compress function called!");
+
     if (files.length === 0) {
       toast({
         title: "Error",
