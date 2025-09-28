@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from "react";
+// src/components/FileUpload.tsx
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,11 +17,10 @@ export const FileUpload = ({
   onFilesSelected,
   acceptedTypes = [".pdf"],
   maxFiles = 1,
-  title = "Select PDF files",
+  title = "Select files",
   description = "Drag and drop your files here or click to browse",
 }: FileUploadProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -31,37 +31,41 @@ export const FileUpload = ({
     [onFilesSelected, uploadedFiles, maxFiles]
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: acceptedTypes.reduce((acc, type) => {
-      const mimeTypeMap: Record<string, string[]> = {
-        ".pdf": ["application/pdf"],
-        ".doc": ["application/msword"],
-        ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
-        ".jpg": ["image/jpeg"],
-        ".jpeg": ["image/jpeg"],
-        ".png": ["image/png"],
-        ".gif": ["image/gif"],
-        ".bmp": ["image/bmp"],
-        ".tiff": ["image/tiff"],
-        ".json": ["application/json"],
-        ".txt": ["text/plain"],
-        ".zip": ["application/zip"],
-        ".html": ["text/html"],
-        ".md": ["text/markdown"],
-      };
-      const mimeTypes = mimeTypeMap[type] || [];
-      mimeTypes.forEach((mimeType) => {
-        acc[mimeType] = [];
-      });
+  // Map extensions to MIME types
+  const buildAccept = (types: string[]) => {
+    const map: Record<string, string[]> = {
+      ".pdf": ["application/pdf"],
+      ".doc": ["application/msword"],
+      ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+      ".jpg": ["image/jpeg"],
+      ".jpeg": ["image/jpeg"],
+      ".png": ["image/png"],
+      ".gif": ["image/gif"],
+      ".bmp": ["image/bmp"],
+      ".tiff": ["image/tiff"],
+      ".json": ["application/json"],
+      ".txt": ["text/plain"],
+      ".zip": ["application/zip"],
+      ".html": ["text/html"],
+      ".md": ["text/markdown"],
+    };
+
+    return types.reduce((acc, type) => {
+      (map[type] || []).forEach((mime) => (acc[mime] = []));
       return acc;
-    }, {} as Record<string, string[]>),
+    }, {} as Record<string, string[]>);
+  };
+
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: buildAccept(acceptedTypes),
     maxFiles,
-    noClick: true, // we handle clicks manually
+    noClick: true,     // disable auto-click
+    noKeyboard: true,  // disable Enter/Space
   });
 
-  const removeFile = (index: number) => {
-    const newFiles = uploadedFiles.filter((_, i) => i !== index);
+  const removeFile = (i: number) => {
+    const newFiles = uploadedFiles.filter((_, idx) => idx !== i);
     setUploadedFiles(newFiles);
     onFilesSelected(newFiles);
   };
@@ -74,35 +78,30 @@ export const FileUpload = ({
           {...getRootProps()}
           className={`cursor-pointer transition-colors ${
             isDragActive
-              ? "border-primary bg-accent border-2 border-dashed"
-              : "border-muted-foreground/25 hover:border-primary/50 border-2 border-dashed"
-          } p-6 rounded-lg`}
+              ? "border-primary bg-accent"
+              : "border-muted-foreground/25 hover:border-primary/50"
+          } border-2 border-dashed p-6 rounded-lg`}
         >
-          {/* Hidden input with ref */}
-          <input {...getInputProps()} ref={inputRef} />
+          <input {...getInputProps()} />
 
           <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-medium mb-2">{title}</h3>
           <p className="text-muted-foreground mb-4">{description}</p>
         </div>
 
-        {/* Real working button */}
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-          className="mt-4"
-        >
+        {/* Working button */}
+        <Button type="button" onClick={open} className="mt-4">
           Choose Files
         </Button>
       </Card>
 
+      {/* File list */}
       {uploadedFiles.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Selected Files:</h4>
-          {uploadedFiles.map((file, index) => (
+          {uploadedFiles.map((file, idx) => (
             <div
-              key={index}
+              key={idx}
               className="flex items-center justify-between p-3 bg-accent rounded-lg"
             >
               <div className="flex items-center space-x-3">
@@ -116,7 +115,7 @@ export const FileUpload = ({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => removeFile(index)}
+                onClick={() => removeFile(idx)}
               >
                 <X className="h-4 w-4" />
               </Button>
