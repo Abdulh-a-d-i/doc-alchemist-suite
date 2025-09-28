@@ -3,8 +3,6 @@ import { Header } from "@/components/Header";
 import { FileUpload } from "@/components/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { GitMerge, ArrowLeft, Download, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { pdfApi } from "@/services/pdfApi";
@@ -12,14 +10,20 @@ import { useNavigate } from "react-router-dom";
 
 const Merge = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [mergeType, setMergeType] = useState("pdf");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  console.log("Button disabled state:", isProcessing || files.length < 2);
+  console.log("Files:", files);
+  console.log("isProcessing:", isProcessing);
+
   const handleMerge = async () => {
-    console.log("Merge button clicked!", { files, mergeType }); // Debug log
-    
+    console.log("=== HANDLE MERGE CALLED ===");
+    console.log("Files at start of function:", files);
+    console.log("Merge button clicked!", { files });
+    alert("Merge function called!");
+
     if (files.length < 2) {
       toast({
         title: "Error",
@@ -32,14 +36,14 @@ const Merge = () => {
     setIsProcessing(true);
 
     try {
-      // Use the basic merge method that exists in your API
+      // Use the basic merge method (assuming PDF-only, matching compress simplification)
       const result = await pdfApi.merge(files);
       
       // Download the merged file
       const url = window.URL.createObjectURL(result);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'merged.pdf';
+      a.download = `merged.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
@@ -52,7 +56,7 @@ const Merge = () => {
       
       setFiles([]);
     } catch (error: any) {
-      console.error("Merge error:", error); // Debug log
+      console.error("Merge error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to merge files. Please try again.",
@@ -60,32 +64,6 @@ const Merge = () => {
       });
     } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const getAcceptedTypes = () => {
-    switch (mergeType) {
-      case 'pdf':
-        return ['.pdf'];
-      case 'word':
-        return ['.docx', '.doc'];
-      case 'powerpoint':
-        return ['.pptx', '.ppt'];
-      case 'excel':
-        return ['.xlsx', '.xls'];
-      case 'images':
-        return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'];
-      default:
-        return ['.pdf'];
-    }
-  };
-
-  const getMaxFiles = () => {
-    switch (mergeType) {
-      case 'images':
-        return 20;
-      default:
-        return 10;
     }
   };
 
@@ -112,41 +90,20 @@ const Merge = () => {
                 <GitMerge className="h-10 w-10 text-white" />
               </div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Merge Files
+                Merge PDF Files
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Combine multiple files into a single document. Choose your file type and upload your files.
+                Combine multiple PDF files into a single document.
               </p>
             </CardHeader>
             
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="merge-type" className="text-foreground">
-                  File Type to Merge
-                </Label>
-                <Select value={mergeType} onValueChange={(value) => {
-                  setMergeType(value);
-                  setFiles([]);
-                }}>
-                  <SelectTrigger className="glass-card">
-                    <SelectValue placeholder="Select file type" />
-                  </SelectTrigger>
-                  <SelectContent className="glass-card">
-                    <SelectItem value="pdf">PDF Files</SelectItem>
-                    <SelectItem value="word">Word Documents</SelectItem>
-                    <SelectItem value="powerpoint">PowerPoint Presentations</SelectItem>
-                    <SelectItem value="excel">Excel Spreadsheets</SelectItem>
-                    <SelectItem value="images">Images (to PDF)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <FileUpload
                 onFilesSelected={setFiles}
-                acceptedTypes={getAcceptedTypes()}
-                maxFiles={getMaxFiles()}
-                title={`Select ${mergeType.toUpperCase()} files to merge`}
-                description={`Choose 2 or more ${mergeType.toUpperCase()} files to combine into one document`}
+                acceptedTypes={['.pdf']}
+                maxFiles={10} // Adjusted for PDF merge
+                title="Select PDF files to merge"
+                description="Choose 2 or more PDF files to combine into one document"
               />
 
               {files.length > 0 && (
@@ -174,7 +131,12 @@ const Merge = () => {
                       Clear Files
                     </Button>
                     <Button 
-                      onClick={handleMerge}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        console.log('Merge button clicked');
+                        handleMerge();
+                      }}
                       disabled={isProcessing || files.length < 2}
                       className="flex-1 glow-effect"
                     >
@@ -195,6 +157,44 @@ const Merge = () => {
               )}
             </CardContent>
           </Card>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="glass-card floating-animation" style={{ animationDelay: '0s' }}>
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <GitMerge className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">PDF Merge</h3>
+                <p className="text-sm text-muted-foreground">
+                  Seamless PDF combination
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card floating-animation" style={{ animationDelay: '0.2s' }}>
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Download className="h-6 w-6 text-success" />
+                </div>
+                <h3 className="font-semibold mb-2">Batch Processing</h3>
+                <p className="text-sm text-muted-foreground">
+                  Combine up to 10 files at once
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glass-card floating-animation" style={{ animationDelay: '0.4s' }}>
+              <CardContent className="p-6 text-center">
+                <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <ArrowLeft className="h-6 w-6 text-warning" />
+                </div>
+                <h3 className="font-semibold mb-2">Smart Order</h3>
+                <p className="text-sm text-muted-foreground">
+                  Files merged in upload order
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
