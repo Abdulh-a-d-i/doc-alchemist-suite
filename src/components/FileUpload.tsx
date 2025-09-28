@@ -36,7 +36,28 @@ export const FileUpload = ({
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: acceptedTypes.reduce((acc, type) => {
-      acc[type] = [];
+      // Map file extensions to MIME types
+      const mimeTypeMap: Record<string, string[]> = {
+        '.pdf': ['application/pdf'],
+        '.doc': ['application/msword'],
+        '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        '.jpg': ['image/jpeg'],
+        '.jpeg': ['image/jpeg'],
+        '.png': ['image/png'],
+        '.gif': ['image/gif'],
+        '.bmp': ['image/bmp'],
+        '.tiff': ['image/tiff'],
+        '.json': ['application/json'],
+        '.txt': ['text/plain'],
+        '.zip': ['application/zip'],
+        '.html': ['text/html'],
+        '.md': ['text/markdown']
+      };
+      
+      const mimeTypes = mimeTypeMap[type] || [];
+      mimeTypes.forEach(mimeType => {
+        acc[mimeType] = [];
+      });
       return acc;
     }, {} as Record<string, string[]>),
     maxFiles,
