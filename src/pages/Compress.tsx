@@ -143,22 +143,15 @@ const Compress = () => {
                       Clear File
                     </Button>
                     <Button 
-                      onClick={handleCompress}
-                      disabled={isProcessing || files.length === 0}
-                      className="flex-1 glow-effect"
-                    >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Compressing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Compress File
-                        </>
-                      )}
-                    </Button>
+                    onClick={() => {
+                      console.log("INLINE CLICK HANDLER CALLED");
+                      alert("Inline handler works!");
+                    }}
+                    className="flex-1 glow-effect"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Test Click
+                  </Button>
                   </div>
                 </div>
               )}
