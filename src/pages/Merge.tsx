@@ -132,25 +132,17 @@ const Merge = () => {
                     </Button>
                     <Button 
                       onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        console.log('Merge button clicked');
+                        e.stopPropagation(); // Keep if needed, but test removing
+                        // e.preventDefault(); // Remove this—unnecessary for type="button" and may interfere
+                        console.log('Compress button clicked');
                         handleMerge();
                       }}
-                      disabled={isProcessing || files.length < 2}
+                      disabled={isProcessing || files.length === 0}
                       className="flex-1 glow-effect"
+                      style={{ pointerEvents: 'auto', zIndex: 10, userSelect: 'none' }} // Override: ensure clickable, raise above overlays, prevent text select
                     >
-                      {isProcessing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Merging...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="h-4 w-4 mr-2" />
-                          Merge Files
-                        </>
-                      )}
+                      <Download className="h-4 w-4 mr-2" />
+                      Merge Files
                     </Button>
                   </div>
                 </div>
