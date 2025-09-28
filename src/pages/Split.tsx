@@ -1,4 +1,3 @@
-// Fixed src/pages/Split.tsx
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { FileUpload } from "@/components/FileUpload";
@@ -19,12 +18,13 @@ const Split = () => {
   const navigate = useNavigate();
 
   const validatePageRange = (pageRange: string): boolean => {
-    // Simple validation for page ranges like "1-3,5,7-10"
     const pattern = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/;
     return pattern.test(pageRange.replace(/\s/g, ''));
   };
 
   const handleSplit = async () => {
+    console.log("Split button clicked!", { files, pages }); // Debug log
+    
     if (files.length === 0) {
       toast({
         title: "Error",
@@ -55,8 +55,8 @@ const Split = () => {
     setIsProcessing(true);
 
     try {
-      // Use the fixed splitAdvanced method
-      const result = await pdfApi.splitAdvanced(files[0], pages);
+      // Use the basic split method that exists in your API
+      const result = await pdfApi.split(files[0], pages);
       
       // Download the split file
       const url = window.URL.createObjectURL(result);
@@ -78,6 +78,7 @@ const Split = () => {
       setFiles([]);
       setPages("");
     } catch (error: any) {
+      console.error("Split error:", error); // Debug log
       toast({
         title: "Error",
         description: error.message || "Failed to split PDF. Please try again.",
@@ -193,44 +194,6 @@ const Split = () => {
               )}
             </CardContent>
           </Card>
-
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Scissors className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">Precise Control</h3>
-                <p className="text-sm text-muted-foreground">
-                  Extract exactly the pages you need
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0.2s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <Download className="h-6 w-6 text-success" />
-                </div>
-                <h3 className="font-semibold mb-2">High Quality</h3>
-                <p className="text-sm text-muted-foreground">
-                  Maintains original PDF quality
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-card floating-animation" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="p-6 text-center">
-                <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <ArrowLeft className="h-6 w-6 text-warning" />
-                </div>
-                <h3 className="font-semibold mb-2">Flexible Syntax</h3>
-                <p className="text-sm text-muted-foreground">
-                  Simple page range notation
-                </p>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </div>
