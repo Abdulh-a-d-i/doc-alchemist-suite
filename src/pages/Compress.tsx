@@ -16,7 +16,9 @@ const Compress = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-
+  console.log("Button disabled state:", isProcessing || files.length === 0);
+  console.log("Files:", files);
+  console.log("isProcessing:", isProcessing);
   const handleCompress = async () => {
     console.log("Compress button clicked!", { files, compressionLevel });
     
