@@ -3,7 +3,7 @@ import { ToolsGrid } from "@/components/ToolsGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Shield, Zap, Users, Sparkles, Rocket } from "lucide-react";
+import { Layers, Shield, Zap, Users, Sparkles, Rocket } from "lucide-react";
 
 const Index = () => {
   return (
@@ -24,13 +24,13 @@ const Index = () => {
           {/* Logo Animation */}
           <div className="flex justify-center mb-8">
             <div className="relative">
-              <div className="w-28 h-28 bg-gradient-to-br from-primary via-purple-500 to-accent rounded-3xl flex items-center justify-center hover-glow shadow-2xl transition-all duration-700 hover:scale-110">
+              <div className="w-28 h-28 bg-gradient-to-br from-primary via-primary to-primary-hover rounded-3xl flex items-center justify-center hover-glow shadow-2xl transition-all duration-700 hover:scale-110">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-3xl"></div>
-                <FileText className="h-14 w-14 text-white relative z-10 drop-shadow-2xl" />
+                <Layers className="h-14 w-14 text-white relative z-10 drop-shadow-2xl" />
               </div>
               {/* Orbital rings */}
               <div className="absolute inset-0 border-2 border-primary/30 rounded-full animate-rotate-slow"></div>
-              <div className="absolute inset-2 border border-accent/20 rounded-full animate-rotate-slow" style={{ animationDirection: 'reverse' }}></div>
+              <div className="absolute inset-2 border border-primary/20 rounded-full animate-rotate-slow" style={{ animationDirection: 'reverse' }}></div>
             </div>
           </div>
           
@@ -202,10 +202,10 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-primary-foreground" />
+                <div className="w-10 h-10 bg-gradient-to-r from-primary to-primary-hover rounded-xl flex items-center justify-center">
+                  <Layers className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h3 className="text-xl font-bold text-primary">
                   PDFTools
                 </h3>
               </div>

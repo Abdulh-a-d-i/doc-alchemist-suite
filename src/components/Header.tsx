@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileText, User, LogOut, Menu, X } from "lucide-react";
+import { Layers, User, LogOut, Menu, X } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -47,10 +47,10 @@ export const Header = () => {
           className="flex items-center space-x-3 cursor-pointer group" 
           onClick={() => navigate('/')}
         >
-          <div className="relative w-12 h-12 bg-gradient-to-br from-primary via-accent to-primary rounded-2xl flex items-center justify-center group-hover:scale-110 hover-glow transition-all duration-500 overflow-hidden">
+          <div className="relative w-12 h-12 bg-gradient-to-br from-primary via-primary to-primary-hover rounded-2xl flex items-center justify-center group-hover:scale-110 hover-glow transition-all duration-500 overflow-hidden">
             {/* Animated background */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-50"></div>
-            <FileText className="h-7 w-7 text-white relative z-10 drop-shadow-lg" />
+            <Layers className="h-7 w-7 text-white relative z-10 drop-shadow-lg" />
           </div>
           <div>
             <h1 className="text-2xl font-heading font-bold gradient-text">
