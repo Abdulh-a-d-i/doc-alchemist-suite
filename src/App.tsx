@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Merge from "./pages/Merge";
 import Split from "./pages/Split";
 import Compress from "./pages/Compress";
+import JiraConversions from "./pages/JiraConversions";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/jira-conversions" element={<JiraConversions />} />
             <Route path="/merge" element={<Merge />} />
             <Route path="/split" element={<Split />} />
             <Route path="/compress" element={<Compress />} />

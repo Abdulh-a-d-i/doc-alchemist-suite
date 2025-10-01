@@ -13,6 +13,8 @@ import { ToolCard } from "./ToolCard";
 import { ConversionModal } from "./ConversionModal";
 import { WordToJiraFlow } from "./WordToJiraFlow";
 import { JiraToWordFlow } from "./JiraToWordFlow";
+import { PdfToJiraFlow } from "./PdfToJiraFlow";
+import { JiraToPdfFlow } from "./JiraToPdfFlow";
 import { useNavigate } from "react-router-dom";
 
 interface Tool {
@@ -150,6 +152,9 @@ export const ToolsGrid = () => {
   const [showJiraToWord, setShowJiraToWord] = useState(false);
   const navigate = useNavigate();
 
+  const [showPdfToJira, setShowPdfToJira] = useState(false);
+  const [showJiraToPdf, setShowJiraToPdf] = useState(false);
+
   const handleToolClick = (tool: Tool) => {
     if (tool.route) {
       navigate(tool.route);
@@ -157,6 +162,10 @@ export const ToolsGrid = () => {
       setShowWordToJira(true);
     } else if (tool.type === 'jira-to-word') {
       setShowJiraToWord(true);
+    } else if (tool.type === 'pdf-to-jira') {
+      setShowPdfToJira(true);
+    } else if (tool.type === 'jira-to-pdf') {
+      setShowJiraToPdf(true);
     } else if (!tool.comingSoon) {
       setSelectedTool(tool);
     }
@@ -199,6 +208,16 @@ export const ToolsGrid = () => {
       <JiraToWordFlow
         open={showJiraToWord}
         onOpenChange={setShowJiraToWord}
+      />
+
+      <PdfToJiraFlow
+        open={showPdfToJira}
+        onOpenChange={setShowPdfToJira}
+      />
+
+      <JiraToPdfFlow
+        open={showJiraToPdf}
+        onOpenChange={setShowJiraToPdf}
       />
     </>
   );

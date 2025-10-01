@@ -34,6 +34,7 @@ export const Header = () => {
 
   const navItems = [
     { label: "All Tools", href: "/", id: "tools" },
+    { label: "Jira Conversions", href: "/jira-conversions", id: "jira" },
     { label: "Compress PDF", href: "/compress", id: "compress" },
     { label: "Merge PDF", href: "/merge", id: "merge" },
     { label: "Split PDF", href: "/split", id: "split" },
