@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.example.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://full-shrimp-deeply.ngrok-free.app";
 
 interface Task {
   summary: string;
