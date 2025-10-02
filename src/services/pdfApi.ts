@@ -976,6 +976,27 @@ class PdfAPI {
 
     return response.blob();
   }
+
+  // Text → Jira using LLM
+  async textToJira(text?: string, url?: string): Promise<{ state: string; tasks: any[]; filename: string }> {
+    const payload: any = {};
+    if (text) payload.text = text;
+    if (url) payload.url = url;
+
+    const response = await this.request(`${API_BASE_URL}/convert/text-to-jira`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Text to Jira conversion failed: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 }
 
 // Export updated API instance
