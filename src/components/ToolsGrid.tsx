@@ -7,7 +7,8 @@ import {
   Globe, 
   FileTextIcon,
   BookOpen,
-  Layers
+  Layers,
+  Sparkles
 } from "lucide-react";
 import { ToolCard } from "./ToolCard";
 import { ConversionModal } from "./ConversionModal";
@@ -15,6 +16,7 @@ import { WordToJiraFlow } from "./WordToJiraFlow";
 import { JiraToWordFlow } from "./JiraToWordFlow";
 import { PdfToJiraFlow } from "./PdfToJiraFlow";
 import { JiraToPdfFlow } from "./JiraToPdfFlow";
+import { TextToJiraFlow } from "./TextToJiraFlow";
 import { useNavigate } from "react-router-dom";
 
 interface Tool {
@@ -23,7 +25,7 @@ interface Tool {
   description: string;
   icon: typeof FileText;
   color: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf' | 'text-to-jira';
   route?: string;
   comingSoon?: boolean;
 }
@@ -143,6 +145,14 @@ const tools: Tool[] = [
     icon: Globe,
     color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
     type: 'html-to-pdf'
+  },
+  {
+    id: 'text-to-jira',
+    title: 'Text → Jira (LLM)',
+    description: 'Convert text or meeting transcripts to Jira tasks using AI',
+    icon: Sparkles,
+    color: 'bg-gradient-to-r from-purple-500 to-pink-600',
+    type: 'text-to-jira'
   }
 ];
 
@@ -154,6 +164,7 @@ export const ToolsGrid = () => {
 
   const [showPdfToJira, setShowPdfToJira] = useState(false);
   const [showJiraToPdf, setShowJiraToPdf] = useState(false);
+  const [showTextToJira, setShowTextToJira] = useState(false);
 
   const handleToolClick = (tool: Tool) => {
     if (tool.route) {
@@ -166,6 +177,8 @@ export const ToolsGrid = () => {
       setShowPdfToJira(true);
     } else if (tool.type === 'jira-to-pdf') {
       setShowJiraToPdf(true);
+    } else if (tool.type === 'text-to-jira') {
+      setShowTextToJira(true);
     } else if (!tool.comingSoon) {
       setSelectedTool(tool);
     }
@@ -218,6 +231,11 @@ export const ToolsGrid = () => {
       <JiraToPdfFlow
         open={showJiraToPdf}
         onOpenChange={setShowJiraToPdf}
+      />
+
+      <TextToJiraFlow
+        open={showTextToJira}
+        onOpenChange={setShowTextToJira}
       />
     </>
   );

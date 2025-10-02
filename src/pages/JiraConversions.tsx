@@ -1,18 +1,20 @@
 import { Header } from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Layers, FileText, FileTextIcon, BookOpen } from "lucide-react";
+import { Layers, FileText, FileTextIcon, BookOpen, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { JiraToWordFlow } from "@/components/JiraToWordFlow";
 import { WordToJiraFlow } from "@/components/WordToJiraFlow";
 import { PdfToJiraFlow } from "@/components/PdfToJiraFlow";
 import { JiraToPdfFlow } from "@/components/JiraToPdfFlow";
+import { TextToJiraFlow } from "@/components/TextToJiraFlow";
 
 const JiraConversions = () => {
   const [showJiraToWord, setShowJiraToWord] = useState(false);
   const [showWordToJira, setShowWordToJira] = useState(false);
   const [showPdfToJira, setShowPdfToJira] = useState(false);
   const [showJiraToPdf, setShowJiraToPdf] = useState(false);
+  const [showTextToJira, setShowTextToJira] = useState(false);
 
   const conversions = [
     {
@@ -46,6 +48,14 @@ const JiraConversions = () => {
       icon: BookOpen,
       color: 'from-emerald-500 to-emerald-600',
       onClick: () => setShowJiraToPdf(true)
+    },
+    {
+      id: 'text-to-jira',
+      title: 'Text → Jira (LLM)',
+      description: 'Convert text or meeting transcripts to Jira tasks using AI',
+      icon: Sparkles,
+      color: 'from-purple-500 to-purple-600',
+      onClick: () => setShowTextToJira(true)
     }
   ];
 
@@ -123,6 +133,7 @@ const JiraConversions = () => {
       <WordToJiraFlow open={showWordToJira} onOpenChange={setShowWordToJira} />
       <PdfToJiraFlow open={showPdfToJira} onOpenChange={setShowPdfToJira} />
       <JiraToPdfFlow open={showJiraToPdf} onOpenChange={setShowJiraToPdf} />
+      <TextToJiraFlow open={showTextToJira} onOpenChange={setShowTextToJira} />
     </div>
   );
 };
