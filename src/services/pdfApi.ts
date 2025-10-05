@@ -377,47 +377,53 @@ class PdfAPI {
 
   // Convert files using the /convert endpoint
   async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("target", target);
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("target", target);
 
-    const response = await this.request(`${API_BASE_URL}/convert`, {
-      method: "POST",
-      body: formData,
-    });
+  const response = await this.request(`${API_BASE_URL}/convert`, {
+    method: "POST",
+    body: formData,
+  });
 
-    if (!response.ok) {
-      throw new Error(`Conversion failed: ${response.statusText}`);
+  if (!response.ok) {
+    throw new Error(`Conversion failed: ${response.statusText}`);
+  }
+
+  // 🔹 Get the file blob and headers
+  const blob = await response.blob();
+  const contentDisposition = response.headers.get("content-disposition");
+  const contentType = response.headers.get("content-type") || "";
+  const originalName = file.name.split(".")[0];
+
+  let fileName = `${originalName}.${target}`;
+
+  // ✅ If backend gives filename in headers, trust that completely
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    if (match && match[1]) {
+      fileName = match[1].replace(/['"]/g, '');
     }
+  }
 
-    const blob = await response.blob();
-    const originalName = file.name.split(".")[0];
-    
-    // Check if backend returned a ZIP file (for multi-page PDF to JPG conversions)
-    const contentType = response.headers.get("content-type") || "";
-    const contentDisposition = response.headers.get("content-disposition") || "";
-    
-    let fileName = `${originalName}.${target}`;
-    
-    // 🔍 Detect ZIP either by headers or by inspecting the blob
-    if (
-      contentType.includes("zip") ||
-      /\.zip([";]?|$)/i.test(contentDisposition)
-    ) {
-      fileName = `${originalName}.zip`;
-    } else if (contentDisposition) {
-      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-      if (match && match[1]) {
-        fileName = match[1].replace(/['"]/g, '');
-      }
-    } else if (blob.type === "application/zip") {
-      // Fallback: detect based on blob mime type
-      fileName = `${originalName}.zip`;
-    }
-    
-    
+  // ✅ Special rule: if it's a PDF → JPG conversion, just pass whatever backend sends
+  if (file.name.endsWith(".pdf") && target === "jpg") {
+    // Do NOT alter file name or extension — trust backend response
+    // (since backend might return .zip or .jpg based on number of pages)
     return { blob, fileName };
   }
+
+  // ✅ Optional: fallback if backend didn’t set filename
+  if (!contentDisposition) {
+    if (contentType.includes("zip")) {
+      fileName = `${originalName}.zip`;
+    } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
+      fileName = `${originalName}.jpg`;
+    }
+  }
+
+  return { blob, fileName };
+}
 
   // Compress PDF files
   async compress(file: File, level: string = "medium"): Promise<Blob> {
