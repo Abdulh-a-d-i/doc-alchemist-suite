@@ -392,7 +392,23 @@ class PdfAPI {
 
     const blob = await response.blob();
     const originalName = file.name.split(".")[0];
-    const fileName = `${originalName}.${target}`;
+    
+    // Check if backend returned a ZIP file (for multi-page PDF to JPG conversions)
+    const contentType = response.headers.get("content-type");
+    const contentDisposition = response.headers.get("content-disposition");
+    
+    let fileName = `${originalName}.${target}`;
+    
+    // If content type is zip or content-disposition suggests zip, use .zip extension
+    if (contentType?.includes("zip") || contentDisposition?.includes(".zip")) {
+      fileName = `${originalName}.zip`;
+    } else if (contentDisposition) {
+      // Extract filename from content-disposition header if available
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+      if (match && match[1]) {
+        fileName = match[1].replace(/['"]/g, '');
+      }
+    }
     
     return { blob, fileName };
   }
