@@ -394,21 +394,27 @@ class PdfAPI {
     const originalName = file.name.split(".")[0];
     
     // Check if backend returned a ZIP file (for multi-page PDF to JPG conversions)
-    const contentType = response.headers.get("content-type");
-    const contentDisposition = response.headers.get("content-disposition");
+    const contentType = response.headers.get("content-type") || "";
+    const contentDisposition = response.headers.get("content-disposition") || "";
     
     let fileName = `${originalName}.${target}`;
     
-    // If content type is zip or content-disposition suggests zip, use .zip extension
-    if (contentType?.includes("zip") || contentDisposition?.includes(".zip")) {
+    // 🔍 Detect ZIP either by headers or by inspecting the blob
+    if (
+      contentType.includes("zip") ||
+      /\.zip([";]?|$)/i.test(contentDisposition)
+    ) {
       fileName = `${originalName}.zip`;
     } else if (contentDisposition) {
-      // Extract filename from content-disposition header if available
       const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
       if (match && match[1]) {
         fileName = match[1].replace(/['"]/g, '');
       }
+    } else if (blob.type === "application/zip") {
+      // Fallback: detect based on blob mime type
+      fileName = `${originalName}.zip`;
     }
+    
     
     return { blob, fileName };
   }
