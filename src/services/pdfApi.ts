@@ -390,35 +390,42 @@ class PdfAPI {
     throw new Error(`Conversion failed: ${response.statusText}`);
   }
 
-  // 🔹 Get the file blob and headers
   const blob = await response.blob();
-  const contentDisposition = response.headers.get("content-disposition");
+  const contentDisposition = response.headers.get("content-disposition") || "";
   const contentType = response.headers.get("content-type") || "";
   const originalName = file.name.split(".")[0];
 
   let fileName = `${originalName}.${target}`;
 
-  // ✅ If backend gives filename in headers, trust that completely
-  if (contentDisposition) {
-    const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-    if (match && match[1]) {
-      fileName = match[1].replace(/['"]/g, '');
-    }
+  // ✅ Always trust backend filename if provided
+  const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+  if (match && match[1]) {
+    fileName = match[1].replace(/['"]/g, "");
   }
 
-  // ✅ Special rule: if it's a PDF → JPG conversion, just pass whatever backend sends
+  // ✅ For PDF → JPG, DO NOT assume anything. Just trust backend.
   if (file.name.endsWith(".pdf") && target === "jpg") {
-    // Do NOT alter file name or extension — trust backend response
-    // (since backend might return .zip or .jpg based on number of pages)
+    // If backend didn’t provide a filename, default to .zip
+    if (!match) {
+      if (contentType.includes("zip")) {
+        fileName = `${originalName}.zip`;
+      } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
+        fileName = `${originalName}.jpg`;
+      } else {
+        fileName = `${originalName}.bin`; // failsafe
+      }
+    }
+
+    // ✅ Return as-is, don’t mess with blob or filename
     return { blob, fileName };
   }
 
-  // ✅ Optional: fallback if backend didn’t set filename
-  if (!contentDisposition) {
+  // ✅ Fallback for other conversions
+  if (!match) {
     if (contentType.includes("zip")) {
       fileName = `${originalName}.zip`;
-    } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
-      fileName = `${originalName}.jpg`;
+    } else if (contentType.includes("pdf")) {
+      fileName = `${originalName}.pdf`;
     }
   }
 
