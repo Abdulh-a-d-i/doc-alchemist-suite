@@ -25,79 +25,15 @@ interface Tool {
   description: string;
   icon: typeof FileText;
   color: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf' | 'text-to-jira';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf' | 'text-to-jira' | 'word-to-notion' | 'notion-to-word';
   route?: string;
   comingSoon?: boolean;
 }
 
 const tools: Tool[] = [
   {
-    id: 'jira-to-word',
-    title: 'Jira to Word',
-    description: 'Export Jira tickets and content to Word documents',
-    icon: Layers,
-    color: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
-    type: 'jira-to-word'
-  },
-  {
-    id: 'word-to-jira',
-    title: 'Word to Jira',
-    description: 'Import Word documents directly into Jira format',
-    icon: FileTextIcon,
-    color: 'bg-gradient-to-r from-pink-500 to-pink-600',
-    type: 'word-to-jira'
-  },
-  {
-    id: 'pdf-to-notion',
-    title: 'PDF to Notion',
-    description: 'Transform PDF files into Notion-compatible format',
-    icon: BookOpen,
-    color: 'bg-gradient-to-r from-gray-600 to-gray-700',
-    type: 'pdf-to-notion'
-  },
-  {
-    id: 'pdf-to-jpg',
-    title: 'PDF to JPG',
-    description: 'Convert PDF pages to high-quality JPG images',
-    icon: FileTextIcon,
-    color: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-    type: 'convert'
-  },
-  {
-    id: 'jpg-to-pdf',
-    title: 'JPG to PDF',
-    description: 'Transform JPG images into PDF documents',
-    icon: FileText,
-    color: 'bg-gradient-to-r from-teal-500 to-teal-600',
-    type: 'convert'
-  },
-  {
-    id: 'pdf-to-jira',
-    title: 'PDF to Jira',
-    description: 'Convert PDF documents directly into Jira tickets and issues',
-    icon: Layers,
-    color: 'bg-gradient-to-r from-violet-500 to-violet-600',
-    type: 'pdf-to-jira'
-  },
-  {
-    id: 'jira-to-pdf',
-    title: 'Jira to PDF',
-    description: 'Export Jira tickets and workflows to professional PDF reports',
-    icon: FileText,
-    color: 'bg-gradient-to-r from-emerald-500 to-emerald-600',
-    type: 'jira-to-pdf'
-  },
-  {
-    id: 'notion-to-pdf',
-    title: 'Notion to PDF',
-    description: 'Transform Notion pages and databases into beautiful PDF documents',
-    icon: BookOpen,
-    color: 'bg-gradient-to-r from-slate-500 to-slate-600',
-    type: 'notion-to-pdf'
-  },
-  {
     id: 'pdf-to-word',
-    title: 'PDF to Word',
+    title: 'PDF → Word',
     description: 'Convert PDF files to editable Word documents with precision',
     icon: FileTextIcon,
     color: 'bg-gradient-to-r from-blue-500 to-blue-600',
@@ -105,11 +41,91 @@ const tools: Tool[] = [
   },
   {
     id: 'word-to-pdf',
-    title: 'Word to PDF',
+    title: 'Word → PDF',
     description: 'Transform Word documents to professional PDF format',
     icon: FileText,
     color: 'bg-gradient-to-r from-red-500 to-red-600',
     type: 'convert'
+  },
+  {
+    id: 'pdf-to-pptx',
+    title: 'PDF → PowerPoint',
+    description: 'Convert PDF documents to editable PowerPoint presentations',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-orange-400 to-orange-500',
+    type: 'convert'
+  },
+  {
+    id: 'pptx-to-pdf',
+    title: 'PowerPoint → PDF',
+    description: 'Transform PowerPoint presentations to PDF format',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-rose-500 to-rose-600',
+    type: 'convert'
+  },
+  {
+    id: 'pdf-to-xlsx',
+    title: 'PDF → Excel',
+    description: 'Extract tables and data from PDF to Excel spreadsheets',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-green-400 to-green-500',
+    type: 'convert'
+  },
+  {
+    id: 'xlsx-to-pdf',
+    title: 'Excel → PDF',
+    description: 'Convert Excel spreadsheets to professional PDF documents',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-emerald-600 to-emerald-700',
+    type: 'convert'
+  },
+  {
+    id: 'pdf-to-csv',
+    title: 'PDF → CSV',
+    description: 'Extract table data from PDF to CSV format',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-lime-500 to-lime-600',
+    type: 'convert'
+  },
+  {
+    id: 'csv-to-pdf',
+    title: 'CSV → PDF',
+    description: 'Convert CSV data files to formatted PDF documents',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-teal-600 to-teal-700',
+    type: 'convert'
+  },
+  {
+    id: 'pdf-to-jpg',
+    title: 'PDF → JPG',
+    description: 'Convert PDF pages to high-quality JPG images',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
+    type: 'convert'
+  },
+  {
+    id: 'jpg-to-pdf',
+    title: 'JPG → PDF',
+    description: 'Transform JPG images into PDF documents',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-amber-500 to-amber-600',
+    type: 'convert'
+  },
+  {
+    id: 'pdf-to-pdfa',
+    title: 'PDF → PDF/A',
+    description: 'Convert PDF to archival PDF/A format for long-term preservation',
+    icon: Archive,
+    color: 'bg-gradient-to-r from-gray-600 to-gray-700',
+    type: 'convert'
+  },
+  {
+    id: 'html-to-pdf',
+    title: 'HTML → PDF',
+    description: 'Convert web pages and HTML content to professional PDFs',
+    icon: Globe,
+    color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
+    type: 'html-to-pdf'
   },
   {
     id: 'compress-pdf',
@@ -139,12 +155,20 @@ const tools: Tool[] = [
     route: '/split'
   },
   {
-    id: 'html-to-pdf',
-    title: 'HTML to PDF',
-    description: 'Convert web pages and HTML content to professional PDFs',
-    icon: Globe,
-    color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
-    type: 'html-to-pdf'
+    id: 'pdf-to-jira',
+    title: 'PDF → Jira',
+    description: 'Convert PDF documents directly into Jira tickets and issues',
+    icon: Layers,
+    color: 'bg-gradient-to-r from-violet-500 to-violet-600',
+    type: 'pdf-to-jira'
+  },
+  {
+    id: 'word-to-jira',
+    title: 'Word → Jira',
+    description: 'Import Word documents directly into Jira format',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-pink-500 to-pink-600',
+    type: 'word-to-jira'
   },
   {
     id: 'text-to-jira',
@@ -153,6 +177,54 @@ const tools: Tool[] = [
     icon: Sparkles,
     color: 'bg-gradient-to-r from-purple-500 to-pink-600',
     type: 'text-to-jira'
+  },
+  {
+    id: 'jira-to-word',
+    title: 'Jira → Word',
+    description: 'Export Jira tickets and content to Word documents',
+    icon: Layers,
+    color: 'bg-gradient-to-r from-indigo-500 to-indigo-600',
+    type: 'jira-to-word'
+  },
+  {
+    id: 'jira-to-pdf',
+    title: 'Jira → PDF',
+    description: 'Export Jira tickets and workflows to professional PDF reports',
+    icon: FileText,
+    color: 'bg-gradient-to-r from-sky-500 to-sky-600',
+    type: 'jira-to-pdf'
+  },
+  {
+    id: 'pdf-to-notion',
+    title: 'PDF → Notion',
+    description: 'Transform PDF files into Notion-compatible format',
+    icon: BookOpen,
+    color: 'bg-gradient-to-r from-slate-600 to-slate-700',
+    type: 'pdf-to-notion'
+  },
+  {
+    id: 'word-to-notion',
+    title: 'Word → Notion',
+    description: 'Import Word documents into Notion as pages',
+    icon: BookOpen,
+    color: 'bg-gradient-to-r from-stone-500 to-stone-600',
+    type: 'word-to-notion'
+  },
+  {
+    id: 'notion-to-word',
+    title: 'Notion → Word',
+    description: 'Export Notion pages and databases to Word documents',
+    icon: FileTextIcon,
+    color: 'bg-gradient-to-r from-zinc-600 to-zinc-700',
+    type: 'notion-to-word'
+  },
+  {
+    id: 'notion-to-pdf',
+    title: 'Notion → PDF',
+    description: 'Transform Notion pages and databases into beautiful PDF documents',
+    icon: BookOpen,
+    color: 'bg-gradient-to-r from-neutral-500 to-neutral-600',
+    type: 'notion-to-pdf'
   }
 ];
 

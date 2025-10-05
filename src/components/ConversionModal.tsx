@@ -15,7 +15,7 @@ interface Tool {
   id: string;
   title: string;
   description: string;
-  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf' | 'text-to-jira';
+  type: 'convert' | 'compress' | 'merge' | 'split' | 'jira-to-word' | 'word-to-jira' | 'pdf-to-notion' | 'html-to-pdf' | 'pdf-to-jira' | 'jira-to-pdf' | 'notion-to-pdf' | 'text-to-jira' | 'word-to-notion' | 'notion-to-word';
 }
 
 interface ConversionModalProps {
@@ -64,14 +64,23 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
           }
         
           let target = '';
+          // PDF conversions
           if (tool.id === 'pdf-to-word') target = 'docx';
-          else if (tool.id === 'word-to-pdf') target = 'pdf';
+          else if (tool.id === 'pdf-to-pptx') target = 'pptx';
+          else if (tool.id === 'pdf-to-xlsx') target = 'xlsx';
+          else if (tool.id === 'pdf-to-csv') target = 'csv';
           else if (tool.id === 'pdf-to-jpg') target = 'jpg';
+          else if (tool.id === 'pdf-to-pdfa') target = 'pdfa';
+          // To PDF conversions
+          else if (tool.id === 'word-to-pdf') target = 'pdf';
+          else if (tool.id === 'pptx-to-pdf') target = 'pdf';
+          else if (tool.id === 'xlsx-to-pdf') target = 'pdf';
+          else if (tool.id === 'csv-to-pdf') target = 'pdf';
           else if (tool.id === 'jpg-to-pdf') target = 'pdf';
         
           const { blob, fileName } = await pdfApi.convert(files[0], target);
         
-          downloadFile(blob, fileName); // ✅ now passing a real Blob + filename
+          downloadFile(blob, fileName);
           break;
           
         case 'compress':
@@ -219,18 +228,22 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
     switch (tool.type) {
       case 'convert':
         if (tool.id.includes('pdf-to')) return ['.pdf'];
-        if (tool.id.includes('word-to')) return ['.doc', '.docx'];
+        if (tool.id.includes('word-to') || tool.id.includes('-to-word')) return ['.doc', '.docx'];
+        if (tool.id.includes('pptx-to') || tool.id.includes('-to-pptx')) return ['.ppt', '.pptx'];
+        if (tool.id.includes('xlsx-to') || tool.id.includes('-to-xlsx')) return ['.xls', '.xlsx'];
+        if (tool.id.includes('csv-to') || tool.id.includes('-to-csv')) return ['.csv'];
         if (tool.id.includes('jpg-to')) return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff'];
         return ['.pdf'];
       case 'word-to-jira':
+      case 'word-to-notion':
         return ['.doc', '.docx'];
       case 'pdf-to-notion':
-        return ['.pdf'];
       case 'pdf-to-jira':
         return ['.pdf'];
       case 'jira-to-pdf':
         return ['.json', '.txt'];
       case 'notion-to-pdf':
+      case 'notion-to-word':
         return ['.zip', '.html', '.md'];
       default:
         return ['.pdf'];
