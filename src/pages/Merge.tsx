@@ -9,6 +9,9 @@ import { pdfApi } from "@/services/pdfApi";
 import { useNavigate } from "react-router-dom";
 
 const Merge = () => {
+  // Set page title for SEO
+  document.title = "Merge PDF – Free Online PDF Merger | Free Tools";
+  
   const [files, setFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -90,10 +93,10 @@ const Merge = () => {
                 <GitMerge className="h-10 w-10 text-white" />
               </div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Merge PDF Files
+                Free PDF Merge Tool
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Combine multiple PDF files into a single document.
+                Combine multiple PDF files into a single document – fast, free, and secure.
               </p>
             </CardHeader>
             

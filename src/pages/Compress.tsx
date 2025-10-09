@@ -11,6 +11,9 @@ import { pdfApi } from "@/services/pdfApi";
 import { useNavigate } from "react-router-dom";
 
 const Compress = () => {
+  // Set page title for SEO
+  document.title = "Compress PDF – Free Online PDF Compressor | Free Tools";
+  
   const [files, setFiles] = useState<File[]>([]);
   const [compressionLevel, setCompressionLevel] = useState("medium");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -91,10 +94,10 @@ const Compress = () => {
                 <Archive className="h-10 w-10 text-white" />
               </div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Compress Files
+                Free PDF Compressor
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Reduce file size while maintaining quality. Choose your compression level.
+                Reduce PDF file size while maintaining quality – free online PDF compression tool.
               </p>
             </CardHeader>
             

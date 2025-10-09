@@ -10,6 +10,9 @@ import { JiraToPdfFlow } from "@/components/JiraToPdfFlow";
 import { TextToJiraFlow } from "@/components/TextToJiraFlow";
 
 const JiraConversions = () => {
+  // Set page title for SEO
+  document.title = "Jira Conversions – Export & Import Jira Tasks | Free Tools";
+  
   const [showJiraToWord, setShowJiraToWord] = useState(false);
   const [showWordToJira, setShowWordToJira] = useState(false);
   const [showPdfToJira, setShowPdfToJira] = useState(false);
@@ -79,11 +82,11 @@ const JiraConversions = () => {
           </div>
           
           <h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 gradient-text">
-            Jira Conversions
+            Free Jira Conversions
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Seamlessly convert between Jira tickets and document formats. 
-            Import, export, and transform your project data with ease.
+            Free Jira to Word export, Word to Jira import, and PDF to Jira conversion tools. 
+            Seamlessly transform your project data with ease.
           </p>
         </div>
       </section>

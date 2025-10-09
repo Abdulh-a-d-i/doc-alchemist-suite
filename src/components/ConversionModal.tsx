@@ -258,7 +258,9 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto border-primary/30 bg-background/98 backdrop-blur-xl">
         <DialogHeader>
-          <DialogTitle className="text-foreground font-semibold">{tool.title}</DialogTitle>
+          <DialogTitle className="text-foreground font-semibold">
+            {tool.title} – Free Online Tool | Free Tools
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">

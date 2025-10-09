@@ -37,9 +37,7 @@ const Index = () => {
           <div className="space-y-8 animate-fade-up">
             <div className="space-y-4">
               <h1 className="text-5xl md:text-8xl font-heading font-bold gradient-text leading-none tracking-tight">
-                REVOLUTIONARY FREE
-                <br />
-                <span className="text-glow">PDF SUITE</span>
+                FREE TOOLS
               </h1>
               <div className="flex justify-center">
                 <div className="h-1 w-32 bg-gradient-to-r from-primary via-accent to-primary rounded-full glow-primary"></div>
@@ -47,12 +45,10 @@ const Index = () => {
             </div>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light">
-              Experience next-generation FREE PDF processing with{" "}
-              <span className="text-primary font-medium">intelligent processing</span>. 
-              FREE converters to compress, merge, and transform your documents with{" "}
-              <span className="text-accent font-medium">unprecedented speed</span> - all completely FREE.
-              <br />
-              <span className="font-semibold text-primary">FREE Word to Jira</span> and <span className="font-semibold text-primary">FREE Jira to Word</span> conversions available.
+              Smart, Fast, and Totally Free Tools for Your Everyday Workflows.
+            </p>
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+              Free PDF converter, Word to PDF, PDF to Word, Jira integrations, document compression, merge, split, and more — all completely free.
             </p>
             
             {/* Enhanced Search Bar */}
@@ -81,12 +77,10 @@ const Index = () => {
             </div>
             
             <h2 className="text-4xl md:text-6xl font-heading font-bold mb-6 gradient-text">
-              All FREE PDF Tools in One Place
+              All Free Tools in One Place
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Choose from our comprehensive collection of{" "}
-              <span className="text-primary font-medium">FREE AI-powered PDF tools</span>. 
-              Each FREE converter is designed for maximum speed, security, and ease of use.
+              Free online PDF converter, Word to PDF converter, compress PDF files, merge PDFs, and Jira integrations — all designed for speed, security, and ease of use.
             </p>
           </div>
           
@@ -101,10 +95,10 @@ const Index = () => {
         <div className="container mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Why Choose Our FREE Platform?
+              Why Choose Free Tools?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Built with cutting-edge technology for modern workflow - completely FREE
+              Built with cutting-edge technology for modern workflows — completely free, forever.
             </p>
           </div>
           
@@ -121,11 +115,11 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Zap className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Lightning Fast & FREE</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Lightning Fast</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  FREE AI-optimized processing engines deliver results in{" "}
+                  AI-optimized processing engines deliver results in{" "}
                   <span className="text-yellow-400 font-medium">milliseconds</span>. 
-                  Experience the future of FREE document processing speed.
+                  Experience the future of free document processing.
                 </p>
               </CardContent>
             </Card>
@@ -141,10 +135,10 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Shield className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Military-Grade Security & FREE</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Secure & Private</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  <span className="text-green-400 font-medium">FREE End-to-end encryption</span> with automatic file deletion. 
-                  Your documents are processed securely and never stored - all FREE.
+                  <span className="text-green-400 font-medium">End-to-end encryption</span> with automatic file deletion. 
+                  Your documents are processed securely and never stored.
                 </p>
               </CardContent>
             </Card>
@@ -160,11 +154,11 @@ const Index = () => {
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-2xl"></div>
                   <Users className="h-10 w-10 text-white relative z-10 drop-shadow-lg" />
                 </div>
-                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Intuitive Design & FREE</h3>
+                <h3 className="text-2xl font-heading font-bold mb-4 text-foreground">Easy to Use</h3>
                 <p className="text-muted-foreground leading-relaxed">
-                  FREE streamlined interface powered by{" "}
+                  Streamlined interface powered by{" "}
                   <span className="text-purple-400 font-medium">user research</span>. 
-                  Complex operations made simple with FREE smart automation.
+                  Complex operations made simple with smart automation.
                 </p>
               </CardContent>
             </Card>
@@ -206,22 +200,22 @@ const Index = () => {
                   <Layers className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <h3 className="text-xl font-bold text-primary">
-                  PDFTools
+                  Free Tools
                 </h3>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                The next-generation PDF toolkit powered by AI. 
-                Transform your document workflow with intelligent automation.
+                Smart, fast, and totally free tools for your everyday workflows. 
+                Transform documents with intelligent automation.
               </p>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4 text-foreground">Convert</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">PDF to Word</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Word to PDF</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">HTML to PDF</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Notion to PDF</a></li>
+                <li><a href="/#tools" className="text-muted-foreground hover:text-primary transition-colors">PDF to Word Converter</a></li>
+                <li><a href="/#tools" className="text-muted-foreground hover:text-primary transition-colors">Word to PDF Converter</a></li>
+                <li><a href="/#tools" className="text-muted-foreground hover:text-primary transition-colors">HTML to PDF</a></li>
+                <li><a href="/#tools" className="text-muted-foreground hover:text-primary transition-colors">PDF to Excel</a></li>
               </ul>
             </div>
             
@@ -235,21 +229,48 @@ const Index = () => {
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4 text-foreground">Special Tools</h4>
+              <h4 className="font-semibold mb-4 text-foreground">Jira Integrations</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Jira to Word</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Word to Jira</a></li>
+                <li><a href="/jira-conversions" className="text-muted-foreground hover:text-primary transition-colors">Jira to Word Export</a></li>
+                <li><a href="/jira-conversions" className="text-muted-foreground hover:text-primary transition-colors">Word to Jira Import</a></li>
+                <li><a href="/jira-conversions" className="text-muted-foreground hover:text-primary transition-colors">PDF to Jira</a></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-primary/20 pt-8 mt-12 text-center">
             <p className="text-muted-foreground">
-              &copy; 2024 PDFTools. Engineered for the future. All rights reserved.
+              &copy; 2025 Free Tools. Smart, fast, and totally free. All rights reserved.
             </p>
           </div>
         </div>
       </footer>
+
+      {/* Schema.org JSON-LD for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Free Tools",
+          "description": "Smart, fast, and totally free tools for your everyday workflows. Free PDF converter, Word to PDF, Jira integrations, and more.",
+          "url": "https://yoursite.com",
+          "applicationCategory": "UtilitiesApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "Free PDF to Word Converter",
+            "Free Word to PDF Converter",
+            "Free PDF Compression",
+            "Free PDF Merge",
+            "Free PDF Split",
+            "Free Jira to Word Export",
+            "Free Word to Jira Import"
+          ]
+        })}
+      </script>
     </div>
   );
 };

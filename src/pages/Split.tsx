@@ -11,6 +11,9 @@ import { pdfApi } from "@/services/pdfApi";
 import { useNavigate } from "react-router-dom";
 
 const Split = () => {
+  // Set page title for SEO
+  document.title = "Split PDF – Free Online PDF Splitter | Free Tools";
+  
   const [files, setFiles] = useState<File[]>([]);
   const [pages, setPages] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -120,10 +123,10 @@ const Split = () => {
                 <Scissors className="h-10 w-10 text-white" />
               </div>
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Split PDF Files
+                Free PDF Split Tool
               </CardTitle>
               <p className="text-muted-foreground mt-2">
-                Extract specific pages from your PDF. Specify the pages you want to keep.
+                Extract specific pages from your PDF – fast, free, and easy to use.
               </p>
             </CardHeader>
             
