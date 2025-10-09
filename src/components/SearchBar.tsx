@@ -19,15 +19,13 @@ const tools: Tool[] = [
     id: 'pdf-to-word',
     title: 'PDF to Word',
     description: 'Convert PDF files to editable Word documents',
-    keywords: ['pdf', 'word', 'convert', 'docx', 'edit'],
-    comingSoon: true
+    keywords: ['pdf', 'word', 'convert', 'docx', 'edit']
   },
   {
     id: 'word-to-pdf',
     title: 'Word to PDF',
     description: 'Convert Word documents to PDF format',
-    keywords: ['word', 'pdf', 'convert', 'docx', 'document'],
-    comingSoon: true
+    keywords: ['word', 'pdf', 'convert', 'docx', 'document']
   },
   {
     id: 'compress-pdf',
@@ -54,29 +52,25 @@ const tools: Tool[] = [
     id: 'html-to-pdf',
     title: 'HTML to PDF',
     description: 'Convert HTML content or web pages to PDF',
-    keywords: ['html', 'web', 'page', 'convert', 'website'],
-    comingSoon: true
+    keywords: ['html', 'web', 'page', 'convert', 'website']
   },
   {
     id: 'jira-to-word',
     title: 'Jira to Word',
     description: 'Convert Jira content to Word documents',
-    keywords: ['jira', 'word', 'tickets', 'issues', 'export'],
-    comingSoon: true
+    keywords: ['jira', 'word', 'tickets', 'issues', 'export']
   },
   {
     id: 'word-to-jira',
     title: 'Word to Jira',
     description: 'Convert Word documents to Jira format',
-    keywords: ['word', 'jira', 'import', 'tickets', 'convert'],
-    comingSoon: true
+    keywords: ['word', 'jira', 'import', 'tickets', 'convert']
   },
   {
     id: 'notion-to-pdf',
     title: 'Notion to PDF',
     description: 'Convert Notion pages to PDF documents',
-    keywords: ['notion', 'pdf', 'export', 'pages', 'documents'],
-    comingSoon: true
+    keywords: ['notion', 'pdf', 'export', 'pages', 'documents']
   }
 ];
 
@@ -143,12 +137,12 @@ export const SearchBar = ({ onToolSelect }: SearchBarProps) => {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[100]" 
             onClick={() => setIsOpen(false)}
           />
           
           {/* Results */}
-          <Card className="absolute top-full left-0 right-0 mt-2 z-50 glass-card border-primary/20 animate-slide-up">
+          <Card className="absolute top-full left-0 right-0 mt-2 z-[101] glass-card border-primary/20 animate-slide-up bg-background shadow-2xl">
             <CardContent className="p-0">
               {filteredTools.length > 0 ? (
                 <div className="max-h-80 overflow-y-auto">
@@ -160,11 +154,6 @@ export const SearchBar = ({ onToolSelect }: SearchBarProps) => {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-medium text-foreground">{tool.title}</h4>
-                        {tool.comingSoon && (
-                          <Badge variant="secondary" className="text-xs bg-warning/20 text-warning">
-                            Coming Soon
-                          </Badge>
-                        )}
                       </div>
                       <p className="text-sm text-muted-foreground">{tool.description}</p>
                       <div className="flex flex-wrap gap-1 mt-2">
@@ -179,10 +168,7 @@ export const SearchBar = ({ onToolSelect }: SearchBarProps) => {
                 </div>
               ) : (
                 <div className="p-4 text-center">
-                  <p className="text-muted-foreground mb-2">No tools found</p>
-                  <Badge variant="secondary" className="bg-warning/20 text-warning">
-                    Coming Soon
-                  </Badge>
+                  <p className="text-muted-foreground">No tools found</p>
                 </div>
               )}
             </CardContent>
