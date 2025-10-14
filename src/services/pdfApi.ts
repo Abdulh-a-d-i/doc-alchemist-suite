@@ -431,7 +431,7 @@ class PdfAPI {
 
 //   return { blob, fileName };
 // }
-  async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
+async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("target", target);
@@ -442,84 +442,41 @@ class PdfAPI {
   });
 
   if (!response.ok) {
-    throw new Error(`Conversion failed: ${response.status} ${response.statusText}`);
+    throw new Error(`Conversion failed: ${response.statusText}`);
   }
 
-  // Get raw blob
   const blob = await response.blob();
 
-  // Grab headers (if any)
   const contentDisposition = response.headers.get("content-disposition") || "";
   const contentType = (response.headers.get("content-type") || "").toLowerCase();
   const originalName = file.name.split(".")[0];
 
-  // Helper: parse content-disposition filename (handles filename*= and quoted names)
-  const parseFilenameFromContentDisposition = (cd: string): string | null => {
-    if (!cd) return null;
-    // filename*=utf-8''... or filename="..."
-    const reStar = /filename\*\s*=\s*([^;]+)/i;
-    const re = /filename\s*=\s*("([^"]+)"|([^;,\n]+))/i;
-    const mStar = cd.match(reStar);
-    if (mStar && mStar[1]) {
-      // RFC5987 style: possibly url-encoded
-      try {
-        const raw = mStar[1].trim();
-        // remove possible charset/lang prefix: UTF-8''filename
-        const idx = raw.indexOf("''");
-        const encoded = idx >= 0 ? raw.slice(idx + 2) : raw;
-        return decodeURIComponent(encoded.replace(/^["']|["']$/g, ""));
-      } catch {
-        // fallthrough
-      }
-    }
-    const m = cd.match(re);
-    if (m) {
-      return (m[2] || m[3] || "").replace(/["']/g, "").trim();
-    }
-    return null;
-  };
+  // Try to get filename from Content-Disposition
+  let fileName = (() => {
+    const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    return match && match[1] ? match[1].replace(/['"]/g, "") : "";
+  })();
 
-  // If backend provided a filename, trust it
-  let fileName = parseFilenameFromContentDisposition(contentDisposition) || "";
+  // --- 🔍 Detect actual file type if not sure ---
+  const headBytes = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
 
-  // If no fileName from headers — sniff magic bytes
+  const isZip =
+    headBytes[0] === 0x50 && headBytes[1] === 0x4b && [0x03, 0x05, 0x07].includes(headBytes[2]);
+  const isJpeg = headBytes[0] === 0xff && headBytes[1] === 0xd8;
+  const isPdf =
+    headBytes[0] === 0x25 && headBytes[1] === 0x50 && headBytes[2] === 0x44 && headBytes[3] === 0x46;
+
+  // --- 🎯 Decide filename ---
   if (!fileName) {
-    // Read first bytes of blob
-    const headBytes = await (async (b: Blob, len = 8) => {
-      const slice = b.slice(0, len);
-      const arr = new Uint8Array(await slice.arrayBuffer());
-      return arr;
-    })(blob, 8);
-
-    const bytesToHex = (arr: Uint8Array) =>
-      Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join(" ");
-
-    // Detect common signatures
-    const isZip = headBytes[0] === 0x50 && headBytes[1] === 0x4b && (headBytes[2] === 0x03 || headBytes[2] === 0x05 || headBytes[2] === 0x07);
-    const isJpeg = headBytes[0] === 0xff && headBytes[1] === 0xd8 && headBytes[headBytes.length - 1] === 0xff; // basic check
-    const isPdf = headBytes[0] === 0x25 && headBytes[1] === 0x50 && headBytes[2] === 0x44 && headBytes[3] === 0x46; // %PDF
-
-    // pick extension from sniff or content-type if helpful
-    if (isZip) {
+    if (isZip || contentType.includes("zip")) {
       fileName = `${originalName}.zip`;
-    } else if (isJpeg) {
-      // If target was jpg, and backend returned a single jpeg, use .jpg.
+    } else if (isJpeg || contentType.includes("jpeg") || contentType.includes("jpg")) {
       fileName = `${originalName}.jpg`;
-    } else if (isPdf) {
-      fileName = `${originalName}.pdf`;
-    } else if (contentType.includes("zip")) {
-      fileName = `${originalName}.zip`;
-    } else if (contentType.includes("jpeg") || contentType.includes("jpg")) {
-      fileName = `${originalName}.jpg`;
-    } else if (contentType.includes("pdf")) {
+    } else if (isPdf || contentType.includes("pdf")) {
       fileName = `${originalName}.pdf`;
     } else {
-      // failsafe: fallback to target extension if reasonable, otherwise .bin
-      if (target === "jpg") {
-        fileName = `${originalName}.zip`; // prefer zip for multi-page -> jpg conversions
-      } else {
-        fileName = `${originalName}.${target}`; // generic fallback
-      }
+      // fallback to target extension if nothing matches
+      fileName = `${originalName}.${target}`;
     }
   }
 
