@@ -447,22 +447,32 @@ async convert(file: File, from: string, to: string): Promise<{ blob: Blob; fileN
   }
 
   const blob = await response.blob();
-  const originalName = file.name.split(".")[0];
-  
-  // Try to get filename from Content-Disposition header
+
+  // Get filename from headers if provided
   const contentDisposition = response.headers.get("content-disposition") || "";
   const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-  
+
   let fileName = "";
   if (match && match[1]) {
     fileName = match[1].replace(/['"]/g, "");
   } else {
-    // Fallback: use original name with target extension
-    fileName = `${originalName}.${to}`;
+    // fallback based on mime type
+    const contentType = response.headers.get("content-type") || "";
+
+    // detect correct extension dynamically
+    let ext = to;
+    if (contentType.includes("zip")) ext = "zip";
+    else if (contentType.includes("jpeg") || contentType.includes("jpg")) ext = "jpg";
+    else if (contentType.includes("pdf")) ext = "pdf";
+    else if (contentType.includes("png")) ext = "png";
+
+    const originalName = file.name.split(".")[0];
+    fileName = `${originalName}.${ext}`;
   }
 
   return { blob, fileName };
 }
+
 
   // Compress PDF files
   async compress(file: File, level: string = "medium"): Promise<Blob> {
