@@ -431,12 +431,13 @@ class PdfAPI {
 
 //   return { blob, fileName };
 // }
-async convert(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
+async convert(file: File, from: string, to: string): Promise<{ blob: Blob; fileName: string }> {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("target", target);
 
-  const response = await this.request(`${API_BASE_URL}/convert`, {
+  const endpoint = `${API_BASE_URL}/${from}-to-${to}`;
+
+  const response = await this.request(endpoint, {
     method: "POST",
     body: formData,
   });
@@ -446,38 +447,18 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
   }
 
   const blob = await response.blob();
-
-  const contentDisposition = response.headers.get("content-disposition") || "";
-  const contentType = (response.headers.get("content-type") || "").toLowerCase();
   const originalName = file.name.split(".")[0];
-
-  // Try to get filename from Content-Disposition
-  let fileName = (() => {
-    const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-    return match && match[1] ? match[1].replace(/['"]/g, "") : "";
-  })();
-
-  // --- 🔍 Detect actual file type if not sure ---
-  const headBytes = new Uint8Array(await blob.slice(0, 8).arrayBuffer());
-
-  const isZip =
-    headBytes[0] === 0x50 && headBytes[1] === 0x4b && [0x03, 0x05, 0x07].includes(headBytes[2]);
-  const isJpeg = headBytes[0] === 0xff && headBytes[1] === 0xd8;
-  const isPdf =
-    headBytes[0] === 0x25 && headBytes[1] === 0x50 && headBytes[2] === 0x44 && headBytes[3] === 0x46;
-
-  // --- 🎯 Decide filename ---
-  if (!fileName) {
-    if (isZip || contentType.includes("zip")) {
-      fileName = `${originalName}.zip`;
-    } else if (isJpeg || contentType.includes("jpeg") || contentType.includes("jpg")) {
-      fileName = `${originalName}.jpg`;
-    } else if (isPdf || contentType.includes("pdf")) {
-      fileName = `${originalName}.pdf`;
-    } else {
-      // fallback to target extension if nothing matches
-      fileName = `${originalName}.${target}`;
-    }
+  
+  // Try to get filename from Content-Disposition header
+  const contentDisposition = response.headers.get("content-disposition") || "";
+  const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+  
+  let fileName = "";
+  if (match && match[1]) {
+    fileName = match[1].replace(/['"]/g, "");
+  } else {
+    // Fallback: use original name with target extension
+    fileName = `${originalName}.${to}`;
   }
 
   return { blob, fileName };
@@ -545,9 +526,8 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
     if (url) {
       const formData = new FormData();
       formData.append("url", url);
-      formData.append("target", "pdf");
 
-      const response = await this.request(`${API_BASE_URL}/convert-url`, {
+      const response = await this.request(`${API_BASE_URL}/html-to-pdf`, {
         method: "POST",
         body: formData,
       });
@@ -560,7 +540,7 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
     } else if (htmlContent) {
       const blob = new Blob([htmlContent], { type: "text/html" });
       const file = new File([blob], "content.html", { type: "text/html" });
-      const result = await this.convert(file, "pdf");
+      const result = await this.convert(file, "html", "pdf");
       return result.blob;
     } else {
       throw new Error("Either HTML content or URL must be provided");
@@ -938,14 +918,13 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
 
   // Enhanced convert method to handle PDF to Jira/Notion
   async convertAdvanced(file: File, target: string): Promise<{ blob: Blob; fileName: string }> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("target", target);
-
     // Special handling for PDF to Jira/Notion conversions
     if (file.type === "application/pdf" && (target === "jira" || target === "notion")) {
-      // These will return JSON with extracted tasks instead of converted file
-      const response = await this.request(`${API_BASE_URL}/convert`, {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const endpoint = `${API_BASE_URL}/pdf-to-${target}`;
+      const response = await this.request(endpoint, {
         method: "POST",
         body: formData,
       });
@@ -963,8 +942,11 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
       return { blob: jsonBlob, fileName };
     }
 
+    // Extract file extension from filename
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+    
     // Standard conversion
-    return this.convert(file, target);
+    return this.convert(file, fileExtension, target);
   }
 
   // PDF to specific platform conversions
@@ -975,9 +957,8 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("target", "jira");
 
-    const response = await this.request(`${API_BASE_URL}/convert`, {
+    const response = await this.request(`${API_BASE_URL}/pdf-to-jira`, {
       method: "POST",
       body: formData,
     });
@@ -992,9 +973,8 @@ async convert(file: File, target: string): Promise<{ blob: Blob; fileName: strin
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("target", "notion");
 
-    const response = await this.request(`${API_BASE_URL}/convert`, {
+    const response = await this.request(`${API_BASE_URL}/pdf-to-notion`, {
       method: "POST",
       body: formData,
     });

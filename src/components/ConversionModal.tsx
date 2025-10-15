@@ -63,22 +63,18 @@ export const ConversionModal = ({ tool, open, onOpenChange }: ConversionModalPro
             return;
           }
         
-          let target = '';
-          // PDF conversions
-          if (tool.id === 'pdf-to-word') target = 'docx';
-          else if (tool.id === 'pdf-to-pptx') target = 'pptx';
-          else if (tool.id === 'pdf-to-xlsx') target = 'xlsx';
-          else if (tool.id === 'pdf-to-csv') target = 'csv';
-          else if (tool.id === 'pdf-to-jpg') target = 'jpg';
-          else if (tool.id === 'pdf-to-pdfa') target = 'pdfa';
-          // To PDF conversions
-          else if (tool.id === 'word-to-pdf') target = 'pdf';
-          else if (tool.id === 'pptx-to-pdf') target = 'pdf';
-          else if (tool.id === 'xlsx-to-pdf') target = 'pdf';
-          else if (tool.id === 'csv-to-pdf') target = 'pdf';
-          else if (tool.id === 'jpg-to-pdf') target = 'pdf';
+          // Extract source and target formats from tool.id
+          // Format: "source-to-target" (e.g., "pdf-to-word", "word-to-pdf")
+          const parts = tool.id.split('-to-');
+          let from = parts[0];
+          let to = parts[1];
+          
+          // Map display names to actual file extensions
+          if (from === 'word') from = 'docx';
+          if (to === 'word') to = 'docx';
+          if (to === 'pdfa') to = 'pdf';
         
-          const { blob, fileName } = await pdfApi.convert(files[0], target);
+          const { blob, fileName } = await pdfApi.convert(files[0], from, to);
         
           downloadFile(blob, fileName);
           break;
